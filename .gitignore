@@ -1,0 +1,14 @@
+/build/
+/client/assets/
+/client/maps/
+/client/logs/
+/installer/
+/launcher/assets/
+/server/logs/
+/server/maps/
+/tools/
+/videos/
+/website/
+/workspace/
+master assets.lnk
+secrets.txt
