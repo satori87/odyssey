@@ -2,7 +2,11 @@
 /client/assets/
 /client/maps/
 /client/logs/
-/installer/
+/installer/assets/
+/installer/jre/
+/installer/Output/OdysseySetup.exe
+/installer/launcher.jar
+/installer/Odyssey.exe
 /launcher/assets/
 /server/logs/
 /server/maps/
