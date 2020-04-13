@@ -9,6 +9,8 @@ public class MapData implements Serializable {
 	public Tile[][] tile = new Tile[Shared.MAP_WIDTH][Shared.MAP_WIDTH];
 	public MapOptions options = new MapOptions();
 
+	public boolean[][] shadow = new boolean[Shared.MAP_WIDTH*8][Shared.MAP_WIDTH*8];
+	
 	int mmx = 0;
 	int mmy = 0;
 	int cx = 0;
@@ -26,6 +28,7 @@ public class MapData implements Serializable {
 			}
 		}
 	}
+
 
 	void checkMountains(PMap pmap) {
 		Tile t = null;

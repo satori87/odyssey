@@ -70,7 +70,7 @@ public class Player extends Mobile {
 	public void updatePlayerAssets(int[] mapVersions) {
 		mapQueue = new Queue<Integer>();
 		for (int i = 0; i < Shared.NUM_MAPS; i++) {
-			if (World.map[i].version != mapVersions[i]) {
+			if (Realm.map[i].version != mapVersions[i]) {
 				mapQueue.addLast(i);
 			}
 		}
@@ -84,7 +84,7 @@ public class Player extends Mobile {
 				// CommitReceived cr = new CommitReceived();
 				// sendTCP(cr);
 			} else {
-				byte[] str = BearTool.serialize(World.monsterData);
+				byte[] str = BearTool.serialize(Realm.monsterData);
 				chunks = BearTool.divideArray(str, Shared.CHUNK_SIZE);
 				for (int i = 0; i < chunks.length; i++) {
 					sendTCP(new Chunk(chunks[i], 0, i == chunks.length - 1 ? 2 : 0, i));
@@ -94,7 +94,7 @@ public class Player extends Mobile {
 		} else {
 			updating = true;
 			curUpdateMap = mapQueue.removeFirst();
-			chunks = BearTool.divideArray(World.map[curUpdateMap].data, Shared.CHUNK_SIZE);
+			chunks = BearTool.divideArray(Realm.map[curUpdateMap].data, Shared.CHUNK_SIZE);
 			for (int i = 0; i < chunks.length; i++) {
 				sendTCP(new Chunk(chunks[i], curUpdateMap, i == chunks.length - 1 ? 1 : 0, i));
 			}
@@ -167,9 +167,9 @@ public class Player extends Mobile {
 			MonsterData md = (MonsterData) data;
 			if (access > 0) {
 				if (md.id >= 0 && md.id < 255) {
-					World.monsterData[md.id] = md;
+					Realm.monsterData[md.id] = md;
 					game.sendAll(md);
-					World.saveMonster(md.id);
+					Realm.saveMonster(md.id);
 					sendTCP(new MonsterReceived());
 				}
 			} else {
@@ -195,10 +195,10 @@ public class Player extends Mobile {
 					MapData md = (MapData) BearTool.deserialize(updateBytes, MapData.class);
 					PMap pm = new PMap();
 					md.checkAll(pm);
-					md.version = World.map[c.m].version + 1;
-					World.map[c.m].loadEssentials(md, pm);
-					World.map[c.m].reset();
-					World.saveMap(c.m, md);
+					md.version = Realm.map[c.m].version + 1;
+					Realm.map[c.m].loadEssentials(md, pm);
+					Realm.map[c.m].reset();
+					Realm.saveMap(c.m, md);
 					for (Player p : Game.players.values()) {
 						p.mapQueue.addLast(c.m);
 						if (!p.updating) {

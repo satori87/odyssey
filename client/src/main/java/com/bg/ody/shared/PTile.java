@@ -5,8 +5,9 @@ public class PTile {
 	public int edge[][] = new int[2][10];
 	public int cave[] = new int[5];
 	public boolean[] wall = new boolean[5];
+	public boolean[] cast = new boolean[5];
 	public int mtnT[] = new int[5];
-	
+
 	public PTile() {
 
 	}

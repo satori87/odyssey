@@ -9,8 +9,17 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 public class BearNecessities implements BearEssentials {
 
-	public TextureRegion[] frame;
+	public TextureRegion[] framePiece;
 	Texture frameTex;
+	public TextureRegion[] checkBox = new TextureRegion[2];
+
+	public TextureRegion frameTitle;
+	
+	public TextureRegion[][] arrowButton = new TextureRegion[2][4];
+
+	public TextureRegion[] sliderBar = new TextureRegion[3];
+	public TextureRegion[] sliderPiece = new TextureRegion[2];
+
 	public TextureRegion[][] button;
 	public TextureRegion[][] field; // lit, section
 	public TextureRegion[][] font; // type, ascii code
@@ -41,21 +50,30 @@ public class BearNecessities implements BearEssentials {
 			}
 			texture = manager.get("assets/bearnecessities/frame.png");
 			frameTex = texture;
-			frame = new TextureRegion[19];
+			framePiece = new TextureRegion[8];
 			for (i = 0; i < 8; i++) {
-				frame[i] = newTR(texture, i * 32, 0, 32, 32);
+				framePiece[i] = newTR(texture, i * 32, 0, 32, 32);
 			}
-			frame[8] = newTR(texture, 0, 56, 8, 8);
-			frame[9] = newTR(texture, 200, 42, 2, 22);
-			frame[10] = newTR(texture, 214, 42, 2, 22);
-			frame[11] = newTR(texture, 62 + 16, 56, 16, 16);
-			frame[12] = newTR(texture, 62 + 16, 56 + 16, 16, 16);
-			frame[13] = newTR(texture, 62, 56, 16, 16);
-			frame[14] = newTR(texture, 62, 56 + 16, 16, 16);
-			frame[15] = newTR(texture, 94, 56 + 16, 12, 16);
-			frame[16] = newTR(texture, 94, 56, 12, 16);
-			frame[17] = newTR(texture, 106, 56, 13, 13);
-			frame[18] = newTR(texture, 106, 56 + 13, 13, 13);
+
+			// arrow btns
+			for (int a = 0; a < 4; a++) {
+				for (int b = 0; b < 2; b++) {
+					arrowButton[b][a] = newTR(texture, a * 16, 56 + b * 16, 16, 16);
+				}
+			}
+
+			frameTitle = newTR(texture,0,32,160,24);
+			
+			checkBox[0] = newTR(texture, 106, 56, 13, 13);
+			checkBox[1] = newTR(texture, 106, 56 + 13, 13, 13);
+
+			for (int a = 0; a < 3; a++) {
+				sliderBar[a] = newTR(texture, 64 + a * 10, 56, 32, 32);
+			}
+
+			for (int a = 0; a < 2; a++) {
+				sliderPiece[a] = newTR(texture, 94, 56, 32 + a * 16, 32);
+			}
 
 			button = new TextureRegion[2][10];
 			for (int b = 0; b < 2; b++) {
@@ -71,11 +89,11 @@ public class BearNecessities implements BearEssentials {
 
 			field = new TextureRegion[2][3];
 			for (int b = 0; b < 2; b++) {
-				field[b][0] = new TextureRegion(texture, 14, 88 + b * 26, 6, 26);
+				field[b][0] = new TextureRegion(texture, 160, 32 + b * 26, 6, 24);
 				fix(field[b][0], false, true);
-				field[b][1] = new TextureRegion(texture, 20, 88 + b * 26, 4, 26);
+				field[b][1] = new TextureRegion(texture, 18 + 160, 32 + b * 26, 4, 24);
 				fix(field[b][1], false, true);
-				field[b][2] = new TextureRegion(texture, 76, 88 + b * 26, 6, 26);
+				field[b][2] = new TextureRegion(texture, 58 + 160, 32 + b * 26, 6, 24);
 				fix(field[b][2], false, true);
 
 			}

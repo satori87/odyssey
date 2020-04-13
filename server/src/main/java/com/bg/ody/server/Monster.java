@@ -166,7 +166,7 @@ public class Monster extends Mobile {
 	public MonsterData data() {
 		try {
 			if (type >= 0 && type < Shared.NUM_MONSTERS) {
-				return World.monsterData[type];
+				return Realm.monsterData[type];
 			}
 		} catch (Exception e) {
 			Log.error(e);

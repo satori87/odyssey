@@ -20,18 +20,18 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 
-public class World {
+public class Realm {
 
 	Game game;
 
 	public static MonsterData[] monsterData = new MonsterData[Shared.NUM_MONSTERS];
 
 	public static Map[] map = new Map[Shared.NUM_MAPS];
-	public static World world;
+	public static Realm world;
 
 	long tick = 0;
 
-	public World(Game game) {
+	public Realm(Game game) {
 		this.game = game;
 		for (int i = 0; i < Shared.NUM_MONSTERS; i++) {
 			monsterData[i] = new MonsterData(i);

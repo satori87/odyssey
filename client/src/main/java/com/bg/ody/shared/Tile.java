@@ -9,9 +9,11 @@ public class Tile implements Serializable {
 	public int[] shiftX = new int[7];
 	public int[] shiftY = new int[7];
 	public int[] att = new int[2];
-	public int[][] attData = new int[2][6];
+	public int[][] attData = new int[2][10];
 	public boolean[] wall = new boolean[4];
+	public boolean[] cast = new boolean[5];
 	public int height = 0; // used for cave/mtns/walls
+	public int[] vheight = new int[2];
 	public int mount[][] = new int[5][2];
 	public int wallPiece[][] = new int[6][4];
 	public int section = 0;

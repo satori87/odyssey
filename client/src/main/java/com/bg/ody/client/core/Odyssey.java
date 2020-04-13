@@ -34,6 +34,7 @@ import com.bg.ody.shared.Shared;
 import com.bg.ody.shared.MapData;
 import com.bg.ody.shared.MonsterData;
 import com.esotericsoftware.kryo.util.IntMap;
+import com.kotcrab.vis.ui.VisUI;
 import com.bg.ody.shared.Registrar.AdminCommand;
 import com.bg.ody.shared.Registrar.CharacterCreated;
 import com.bg.ody.shared.Registrar.Chunk;
@@ -58,7 +59,7 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 
 	public static Odyssey game;
 	public static Assets assets;
-	public World world = new World();
+	public Realm realm = new Realm();
 
 	// timing
 	long tick = 0;
@@ -160,7 +161,7 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 	@Override
 	public void update() {
 		try {
-			world.update(tick);
+			Realm.realm.update(tick);
 		} catch (Exception e) {
 			Log.error(e);
 			System.exit(0);
@@ -172,7 +173,6 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 			String rest = "";
 			if (gc.length() > 1) {
 				rest = gc.substring(gc.indexOf(" ") + 1);
-				Log.debug(rest);
 				if (gc != null && gc.length() > 0) {
 					String words[] = gc.split(" ");
 					if (words.length > 0) {
@@ -187,7 +187,6 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 								ac.j = Integer.parseInt(words[1]);
 								ac.k = getMe().x;
 								ac.l = getMe().y;
-								Log.debug("ok");
 								sendTCP(ac);
 							} else if (words.length == 4) {
 								AdminCommand ac = new AdminCommand();
@@ -195,8 +194,6 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 								ac.j = Integer.parseInt(words[1]);
 								ac.k = Integer.parseInt(words[2]);
 								ac.l = Integer.parseInt(words[3]);
-
-								Log.debug("p: " + ac.j + "," + ac.k + "," + ac.l);
 								sendTCP(ac);
 							}
 							break;
@@ -388,19 +385,19 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 	}
 
 	private Sprite player(int c) {
-		return World.players.get(c);
+		return Realm.players.get(c);
 	}
 
 	private Monster monster(int c) {
-		return World.monsters.get(c);
+		return Realm.monsters.get(c);
 	}
 
 	private Door door(int c) {
-		return World.doors.get(c);
+		return Realm.doors.get(c);
 	}
 
 	public Sprite getMe() {
-		return World.players.get(cid);
+		return Realm.players.get(cid);
 	}
 
 	public void adminCommand(int i) {
@@ -419,11 +416,11 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 	}
 
 	public static MapData map() {
-		return World.map();
+		return Realm.map();
 	}
 
 	public static PMap pmap() {
-		return World.pmap();
+		return Realm.pmap();
 	}
 
 	@Override
@@ -450,7 +447,7 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 			Scene.lock();
 			Play p = new Play();
 			for (int i = 0; i < Shared.NUM_MAPS; i++) {
-				p.mapVersions[i] = World.mapData[i].version;
+				p.mapVersions[i] = Realm.mapData[i].version;
 			}
 			sendTCP(p);
 		} catch (Exception e) {
@@ -461,8 +458,10 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 
 	@Override
 	public void loaded() {
+
 		Scene.change("menu");
-		World.checkAll();
+		Realm.checkAll();
+		realm.load();
 	}
 
 	@Override
@@ -534,7 +533,7 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 				SendChat sc = (SendChat) object;
 				addChat(sc.channel, sc.s, sc.col);
 			} else if (object instanceof ResetMap) {
-				World.resetMap();
+				Realm.resetMap();
 			} else if (object instanceof PingPacket) {
 				PingPacket pp = (PingPacket) object;
 				ping = (int) (tick - pp.stamp);
@@ -556,20 +555,20 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 				Scene.change("editList");
 			} else if (object instanceof MonsterData) {
 				MonsterData md = (MonsterData) object;
-				World.monsterData[md.id] = md;
+				Realm.monsterData[md.id] = md;
 			} else if (object instanceof JoinGame) {
 				JoinGame jg = (JoinGame) object;
 				joinGame = true;
 				cid = jg.cid;
 				Sprite c = new Sprite(jg.spriteSet, jg.sprite);
 				c.name = jg.name;
-				World.players.put(cid, c);
+				Realm.players.put(cid, c);
 				for (PlayerData pd : jg.players) {
 					processPacket(pd);
 				}
 				c.dir = jg.dir;
 				c.map = jg.map;
-				World.curMap = c.map;
+				Realm.curMap = c.map;
 				c.x = jg.x;
 				c.y = jg.y;
 				int pc = getPlayerCount();
@@ -586,12 +585,12 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 				addChat(3, add, Color.CYAN);
 			} else if (object instanceof JoinMap) {
 				JoinMap jm = (JoinMap) object;
-				World.curMap = jm.id;
+				Realm.curMap = jm.id;
 				getMe().map = jm.id;
 				for (PlayerSync ps : jm.players) {
 					processPacket(ps);
 				}
-				World.resetMap();
+				Realm.resetMap();
 				for (MonsterSync ms : jm.monsters) {
 					processPacket(ms);
 				}
@@ -607,12 +606,12 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 				PlayerJoined pj = (PlayerJoined) object;
 				Sprite c = new Sprite(pj.spriteSet, pj.sprite);
 				c.name = pj.name;
-				World.players.put(pj.cid, c);
+				Realm.players.put(pj.cid, c);
 				addChat(4, pj.name + " has joined the game.", Color.TEAL);
 			} else if (object instanceof PlayerParted) {
 				PlayerParted pj = (PlayerParted) object;
 				addChat(4, player(pj.cid).name + " has left the game.", Color.TEAL);
-				World.players.remove(pj.cid);
+				Realm.players.remove(pj.cid);
 			} else if (object instanceof PlayerData) {
 				PlayerData pd = (PlayerData) object;
 				Sprite c = null;
@@ -625,7 +624,7 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 					}
 				}
 				c.name = pd.name;
-				World.players.put(pd.cid, c);
+				Realm.players.put(pd.cid, c);
 			} else if (object instanceof SyncDirection) {
 				SyncDirection sd = (SyncDirection) object;
 				Sprite c = player(sd.cid);
@@ -638,7 +637,7 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 				Door d = door(ds.id);
 				if (d == null) {
 					d = new Door(ds.id);
-					World.doors.put(ds.id, d);
+					Realm.doors.put(ds.id, d);
 				}
 				d.open = ds.open;
 				d.state = ds.state;
@@ -653,7 +652,7 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 				Monster m = monster(ms.id);
 				if (m == null) {
 					m = new Monster(ms.type);
-					World.monsters.put(ms.id, m);
+					Realm.monsters.put(ms.id, m);
 				}
 				m.map = ms.map;
 				m.dir = ms.dir;
@@ -679,8 +678,8 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 						joinGame = false;
 						c.map = ps.map;
 						if (ps.cid == cid) {
-							World.curMap = c.map;
-							World.pmap[c.map] = null;
+							Realm.curMap = c.map;
+							Realm.pmap[c.map] = null;
 							playScene.processed = false;
 						}
 					}
@@ -727,17 +726,17 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 				}
 				updateBytes = outputStream.toByteArray();
 				if (c.last == 1) { // map chunks
-					World.mapData[c.m] = (MapData) BearTool.deserialize(updateBytes, MapData.class);
-					World.saveMap(c.m);
-					if (World.curMap == c.m) {
-						World.pmap[c.m] = null;
+					Realm.mapData[c.m] = (MapData) BearTool.deserialize(updateBytes, MapData.class);
+					Realm.saveMap(c.m);
+					if (Realm.curMap == c.m) {
+						Realm.pmap[c.m] = null;
 						playScene.processed = false;
 					}
 					updateBytes = new byte[0];
 					MapReceived cr = new MapReceived(c.m);
 					sendTCP(cr);
 				} else if (c.last == 2) { // monster chunks
-					World.monsterData = (MonsterData[]) BearTool.deserialize(updateBytes, MonsterData[].class);
+					Realm.monsterData = (MonsterData[]) BearTool.deserialize(updateBytes, MonsterData[].class);
 					updateBytes = new byte[0];
 				}
 			} else if (object instanceof DiscardMap) {
@@ -772,7 +771,7 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 	}
 
 	public Iterable<Sprite> players() {
-		return World.players.values();
+		return Realm.players.values();
 	}
 
 	public int getPlayerCount() {

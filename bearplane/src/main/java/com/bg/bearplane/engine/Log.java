@@ -35,11 +35,6 @@ public class Log {
 		BearMinimumLog.debug(i + "");
 	}
 
-	public static void debug(double i) {
-		update();
-		BearMinimumLog.debug(i + "");
-	}
-
 	public static void warn(String s) {
 		update();
 		BearMinimumLog.warn(s);

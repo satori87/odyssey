@@ -99,12 +99,12 @@ public class Assets extends BearNecessities implements BearEssentials {
 			if (mapnames != null) {
 				for (String s : mapnames) {
 					n = s.substring(3).substring(0, s.length() - 7);
-					World.mapData[Integer.parseInt(n)] = manager.get("maps/" + s);
+					Realm.mapData[Integer.parseInt(n)] = manager.get("maps/" + s);
 				}
 			}
 			for (int i = 0; i < Shared.NUM_MAPS; i++) {
-				if (World.mapData[i] == null) {
-					World.mapData[i] = new MapData();
+				if (Realm.mapData[i] == null) {
+					Realm.mapData[i] = new MapData();
 				}
 			}
 			if (effectnames != null) {
@@ -113,9 +113,9 @@ public class Assets extends BearNecessities implements BearEssentials {
 						n = s.substring(0, s.length() - 2);
 						ParticleEffect pe = manager.get("assets/effects/" + s);
 						pe.flipY();
-						World.effectData.put(Integer.parseInt(n), pe);
+						Realm.effectData.put(Integer.parseInt(n), pe);
 						ParticleEffectPool pec = new ParticleEffectPool(pe, 1, 20);
-						World.effectPool.put(Integer.parseInt(n), pec);
+						Realm.effectPool.put(Integer.parseInt(n), pec);
 					}
 				}
 			}

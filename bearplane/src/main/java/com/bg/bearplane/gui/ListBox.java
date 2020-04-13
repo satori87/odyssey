@@ -6,22 +6,12 @@ import com.bg.bearplane.engine.BearGame;
 import com.bg.bearplane.engine.BearTool;
 import com.bg.bearplane.engine.Log;
 
-public class ListBox {
-
-	Scene scene;
-
-	public int x = 0;
-	public int y = 0;
+public class ListBox extends Component {
 
 	public ArrayList<String> list = new ArrayList<String>();
 
 	public int sel = 0;
 	public int hover = 0;
-
-	public boolean visible = true;
-
-	public int width = 0;
-	public int height = 0;
 
 	public int scroll = 0;
 
@@ -29,14 +19,9 @@ public class ListBox {
 
 	Frame frame;
 
-	public int id = 0;
-
 	public ListBox(Scene scene, int id, int x, int y, int width, int height) {
+		super(scene, id, x, y);
 		frame = new Frame(scene, x, y, width, height, false, false, true);
-		this.scene = scene;
-		this.x = x;
-		this.y = y;
-		this.id = id;
 		this.width = width;
 		height = ((height - 10) / 20) * 20 + 10;
 		this.height = height;
@@ -48,14 +33,11 @@ public class ListBox {
 
 	int last = 0;
 
-	public void update(long tick) {
-		if (!visible) {
-			return;
-		}
+	public void update() {
 		last = sel;
 		hover = -1;
 		try {
-			frame.update(tick);
+			frame.updateComponent(tick);
 			int sx = Scene.input.mouseX;
 			int sy = Scene.input.mouseY;
 			int my = ((sy - y - 5) / 20) + scroll;
@@ -105,8 +87,6 @@ public class ListBox {
 	}
 
 	public void render() {
-		if (!visible)
-			return;
 		try {
 			int t = 4;
 			int imax = list.size();
@@ -125,7 +105,7 @@ public class ListBox {
 					scene.drawFont(0, x + 10, y + 5 + i * 20 + 3, list.get(ii), false, 1);
 				}
 			}
-			frame.render();
+			frame.renderComponent();
 		} catch (Exception e) {
 			Log.error(e);
 			System.exit(0);

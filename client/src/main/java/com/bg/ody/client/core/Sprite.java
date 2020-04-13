@@ -102,7 +102,7 @@ public class Sprite {
 		else if (oy >= Shared.MAP_WIDTH)
 			exit(d);
 		else if (x != ox || y != oy) {
-			if (World.isVacant(ox, oy, d, x, y)) {
+			if (Realm.isVacant(ox, oy, d, x, y)) {
 				x = ox;
 				y = oy;
 				XO = 0;
@@ -143,7 +143,7 @@ public class Sprite {
 			long diff = moveStamp - tick;
 			float p = ((float) diff / (float) (moveTime + delay)) * 32f;
 			if (this instanceof Monster) {
-				spw = World.monsterData[((Monster) this).type].stepsPerWalk;
+				spw = Realm.monsterData[((Monster) this).type].stepsPerWalk;
 			} else {
 				spw = 2;
 			}

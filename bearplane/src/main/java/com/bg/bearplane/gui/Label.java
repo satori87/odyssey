@@ -1,32 +1,24 @@
 package com.bg.bearplane.gui;
 
 import com.badlogic.gdx.graphics.Color;
+import com.bg.bearplane.engine.BearTool;
 
-public class Label {
-
-	Scene scene;
-
-	public int x = 0;
-	public int y = 0;
+public class Label extends Component {
 
 	public boolean blinking = false;
 	public Color blinkCol = Color.RED;
 	public boolean blink = false;
 	public int blinkterval = 300;
 	public long blinkStamp = 0;
-	public boolean centered = false;
-
+	
 	public boolean wrap = false;
 	public int wrapw = 0;
 
-	public String text = "bunbun";
 	public float scale = 1.0f;
 	public Color color = Color.WHITE;
 
 	public Label(Scene scene, int x, int y, float scale, String text, Color color, boolean centered) {
-		this.scene = scene;
-		this.x = x;
-		this.y = y;
+		super(scene,0,x,y);
 		this.scale = scale;
 		this.color = color;
 		this.text = text;
@@ -47,7 +39,7 @@ public class Label {
 		}
 		if (wrap) {
 			int u = 0;
-			for (String b : Dialog.wrapText(2, wrapw, text)) {
+			for (String b : BearTool.wrapText(2, wrapw, text)) {
 				scene.drawFont(0, x, y + u * 30, b, false, scale, Color.WHITE);
 				u++;
 			}
@@ -57,7 +49,7 @@ public class Label {
 
 	}
 
-	public void update(long tick) {
+	public void update() {
 		if (tick > blinkStamp) {
 			blink = !blink;
 			blinkStamp = tick + blinkterval;

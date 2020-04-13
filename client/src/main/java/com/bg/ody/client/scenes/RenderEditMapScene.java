@@ -6,12 +6,13 @@ import com.bg.bearplane.engine.DrawTask;
 import com.bg.bearplane.gui.Label;
 import com.bg.bearplane.gui.Scene;
 import com.bg.ody.client.core.Assets;
-import com.bg.ody.client.core.World;
+import com.bg.ody.client.core.Realm;
 import com.bg.ody.shared.MapData;
 import com.bg.ody.shared.PMap;
 import com.bg.ody.shared.PTile;
 import com.bg.ody.shared.Shared;
 import com.bg.ody.shared.Tile;
+import com.kotcrab.vis.ui.widget.color.ColorPicker;
 
 public class RenderEditMapScene extends Scene {
 
@@ -31,14 +32,17 @@ public class RenderEditMapScene extends Scene {
 	int curHeight = 1;
 	int curElevation = 0;
 	int att = 1;
-	int[] attData = new int[6];
+	int[] attData = new int[10];
 	boolean[] vis = new boolean[10];
 	int curSelTile = 0;
 	int curSelSet = 0;
 	int curWall = 0;
+	boolean wallShadow = true;
 	int oldSet = 0;
 	int oldTile = 0;
 	int curWallMod = 0;
+
+	int curShadow = 0;
 
 	long scrollStamp = 0;
 	public int scrollX = 0;
@@ -57,6 +61,8 @@ public class RenderEditMapScene extends Scene {
 	int wallX = 0;
 	int wallY = 0;
 	int wallButton = 0;
+
+	public boolean copy = false;
 
 	public boolean isMountain(int set, int tile) {
 		if (set == 0) {
@@ -88,11 +94,11 @@ public class RenderEditMapScene extends Scene {
 	}
 
 	public MapData map() {
-		return World.map();
+		return Realm.map();
 	}
 
 	public PMap pmap() {
-		return World.pmap();
+		return Realm.pmap();
 	}
 
 	@Override
@@ -365,7 +371,7 @@ public class RenderEditMapScene extends Scene {
 		if (editMode < 7) {
 			drawCurTile();
 			drawRecent();
-			 clipToTiles();
+			clipToTiles();
 			Texture t = Assets.textures.get(Shared.tilesets[curSet]);
 			draw(t, 559, 40, 0, 0, t.getWidth(), t.getHeight());
 			endClip();
@@ -386,6 +392,15 @@ public class RenderEditMapScene extends Scene {
 			dx = ((curWallMod) % 16) * 32 + 559;
 			dy = ((curWallMod) / 16) * 32 + 40 + (9 * 32);
 			draw(Assets.textures.get("sel"), dx, dy, 0, 0, 32, 32);
+			if(wallShadow) {
+				draw(Assets.textures.get("sel"), 559, 40+160, 0, 0, 32, 32);
+			} else {
+				draw(Assets.textures.get("sel"), 559, 40+160+32, 0, 0, 32, 32);
+			}
+		} else if (editMode == 8) {
+			Texture t = Assets.textures.get("shadow");
+			draw(t, 559, 40, 0, 0, 256, 32);
+			drawCurTile();
 		} else if (editMode == 9) {
 			Texture a = Assets.textures.get("att");
 			draw(a, 559, 40, 0, 0, 512, 128);
@@ -417,8 +432,30 @@ public class RenderEditMapScene extends Scene {
 	public void drawCurTile() {
 		if (editMode < 7) {
 			drawTile(curSelSet, curSelTile, 559, 586);
-		} else {
+		} else if (editMode == 8) {
+			Texture t = Assets.textures.get("shadow");
+			draw(t, 559, 586, curShadow * 32, 0, 32, 32);
+		}
+	}
 
+	void drawShadows() {
+		int mx = 0;
+		int my = 0;
+		Texture s = Assets.textures.get("shadow");
+		for (int x = 0; x < 16; x++) {
+			for (int y = 0; y < 16; y++) {
+				mx = x + scrollX;
+				my = y + scrollY;
+				if (inBounds(mx, my)) {
+					for (int a = 0; a < 8; a++) {
+						for (int b = 0; b < 8; b++) {
+							if (map().shadow[mx * 8 + a][my * 8 + b]) {
+								draw(s, x * 32 + a * 4 + 20, y * 32 + b * 4 + 40, 14, 14, 4, 4);
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -459,7 +496,7 @@ public class RenderEditMapScene extends Scene {
 							my += Shared.MAP_WIDTH;
 						if (my >= Shared.MAP_WIDTH)
 							my -= Shared.MAP_WIDTH;
-						md = World.getNeighbor(World.curMap, d);
+						md = Realm.getNeighbor(Realm.curMap, d);
 						if (md != null) {
 							t = md.tile[mx][my];
 						}
@@ -512,6 +549,9 @@ public class RenderEditMapScene extends Scene {
 				drawPreview();
 				drawWallsPreview();
 			}
+		}
+		if (vis[8]) {
+			drawShadows();
 		}
 		if (vis[9]) {
 			drawAtt();
@@ -603,11 +643,11 @@ public class RenderEditMapScene extends Scene {
 							my += Shared.MAP_WIDTH;
 						if (my >= Shared.MAP_WIDTH)
 							my -= Shared.MAP_WIDTH;
-						md = World.getNeighbor(World.curMap, d);
+						md = Realm.getNeighbor(Realm.curMap, d);
 						if (md != null) {
 							t = md.tile[mx][my];
-							if (World.pmap[map().options.exit[d]] != null) {
-								p = World.pmap[map().options.exit[d]].tile[mx][my];
+							if (Realm.pmap[map().options.exit[d]] != null) {
+								p = Realm.pmap[map().options.exit[d]].tile[mx][my];
 							}
 						}
 					}
@@ -615,7 +655,10 @@ public class RenderEditMapScene extends Scene {
 				if (t != null && p != null) {
 					for (int i = 0; i < 5; i++) {
 						if (i < 4 && (t.wall[i] || p.wall[i])) {
-							draw(w, x * 32 + 20, y * 32 + 40, i * 32, 0, 32, 32);
+							if(t.cast[i] || p.cast[i]) {
+								draw(w, x * 32 + 20, y * 32 + 40, i * 32, 32, 32, 32);
+							} else {
+							draw(w, x * 32 + 20, y * 32 + 40, i * 32, 0, 32, 32);}
 						}
 					}
 				}
@@ -682,11 +725,11 @@ public class RenderEditMapScene extends Scene {
 							my += Shared.MAP_WIDTH;
 						if (my >= Shared.MAP_WIDTH)
 							my -= Shared.MAP_WIDTH;
-						md = World.getNeighbor(World.curMap, d);
+						md = Realm.getNeighbor(Realm.curMap, d);
 						if (md != null) {
 							t = md.tile[mx][my];
 							int exit = map().options.exit[d];
-							pd = World.pmap[exit];
+							pd = Realm.pmap[exit];
 							if (pd == null) {
 							} else {
 								p = pd.tile[mx][my];
@@ -834,6 +877,7 @@ public class RenderEditMapScene extends Scene {
 
 		}
 		drawFont(0, 560, 562, options, false, 1);
+
 	}
 
 }

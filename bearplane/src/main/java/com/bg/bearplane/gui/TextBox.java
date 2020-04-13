@@ -9,16 +9,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.bg.bearplane.engine.BearGame;
 import com.bg.bearplane.engine.Log;
 
-public class TextBox {
-
-	Scene scene;
-
-	public int id = 0;
-
-	public int x = 0;
-	public int y = 0;
-
-	public long tick = 0;
+public class TextBox extends Component {
 
 	public boolean focus = false;
 	public boolean blink = false;
@@ -26,32 +17,22 @@ public class TextBox {
 
 	public int max = 10;
 
-	public int width = 32;
-
 	public boolean allowSpecial = false;
 	public boolean allowLetters = true;
 
 	public boolean password = false;
 
-	public String text = "";
-
-	public boolean centered = true;
-	public boolean visible = true;
-
 	public Frame frame = null;
 
 	public TextBox(Scene scene, int id, int max, boolean focus, int x, int y, int width, boolean centered,
 			Frame frame) {
-		this.scene = scene;
+		super(scene, id, x, y + 16);
 		this.max = max;
 		this.focus = focus;
-		this.id = id;
-		this.x = x;
 		this.frame = frame;
 		if (centered) {
 			this.x -= width / 2;
 		}
-		this.y = y + 16;
 		this.width = width;
 	}
 
@@ -74,9 +55,8 @@ public class TextBox {
 		return (x >= lowerX && x <= upperX && y >= lowerY && y <= upperY);
 	}
 
-	public void update(long tick) {
+	public void update() {
 		try {
-			this.tick = tick;
 			int mX = Scene.input.mouseX;
 			int mY = Scene.input.mouseY;
 			if (Scene.input.wasMouseJustClicked[0]) {
@@ -99,6 +79,7 @@ public class TextBox {
 			}
 			if (focus) {
 				processKeys(max);
+			} else {
 			}
 			if (!allowLetters) {
 				if (text.length() == 0) {
@@ -311,8 +292,6 @@ public class TextBox {
 
 	public void render() {
 		try {
-			if (!visible)
-				return;
 			// render thyself, peasant
 			int l = 0;
 			int sx = 12;

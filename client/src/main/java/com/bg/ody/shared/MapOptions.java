@@ -5,5 +5,7 @@ public class MapOptions {
 	public int id = 0;
 	public int exit[] = new int[4];
 	public int pk = 2;
+	//public boolean indoors = false;
+	//public int alpha = 255;
 
 }

@@ -11,10 +11,11 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.bg.bearplane.engine.DrawTask;
 import com.bg.bearplane.engine.Effect;
+import com.bg.bearplane.engine.Log;
 import com.bg.bearplane.gui.Scene;
 import com.bg.bearplane.gui.TextBox;
 import com.bg.ody.client.core.Sprite;
-import com.bg.ody.client.core.World;
+import com.bg.ody.client.core.Realm;
 import com.bg.ody.client.core.Assets;
 import com.bg.ody.client.core.ChatEntry;
 import com.bg.ody.client.core.Door;
@@ -49,6 +50,8 @@ public class LiveMapScene extends Scene {
 		text.visible = false;
 		text.allowSpecial = true;
 		textBoxes.add(text);
+		text.updateAnyway = true;
+		text.focus = true;
 		fCam.setToOrtho(false, Shared.MAP_WIDTH * 32, Shared.MAP_WIDTH * 32);
 		character = new Sprite(0, 1);
 	}
@@ -63,10 +66,11 @@ public class LiveMapScene extends Scene {
 		my = (input.mouseY / 32) + (int) (cam.position.y / 32) - Shared.GAME_HEIGHT / 64;
 		mmx = (int) (input.mouseX + cam.position.x - Shared.GAME_WIDTH / 2);
 		mmy = (int) (input.mouseY + cam.position.y - Shared.GAME_HEIGHT / 2);
+		
 		Odyssey.game.curChatText = text.text;
 		checkKeys();
 		if (this instanceof PlayScene) {
-			character = World.players.get(Odyssey.game.cid);
+			character = Realm.players.get(Odyssey.game.cid);
 		} else {
 			character.update(tick);
 		}
@@ -97,7 +101,7 @@ public class LiveMapScene extends Scene {
 
 	void checkMouse() {
 		if (mx >= 0 && mx < Shared.MAP_WIDTH && my >= 0 && my < Shared.MAP_WIDTH) {
-			for (Door d : World.doors.values()) {
+			for (Door d : Realm.doors.values()) {
 				d.hover = false;
 				if (Math.abs(mmx - d.getTrueX()) < 16) {
 					if (Math.abs(mmy - d.getTrueY()) < 16) {
@@ -169,9 +173,9 @@ public class LiveMapScene extends Scene {
 		if (ncy > by) {
 			// ncy = by;
 		}
-		moveCameraTo(ncx, ncy);
+		
 		drawMap();
-		drawChat();
+		drawChat();moveCameraTo(ncx, ncy);
 	}
 
 	public void drawChat() {
@@ -199,7 +203,7 @@ public class LiveMapScene extends Scene {
 				} else if (d.type == 3) {
 					draw(Assets.textures.get(d.tex), d.x, d.y, d.sx, d.sy, d.w, d.h);
 				} else if (d.type == 4) {
-					World.effects.get(d.f).fx.draw(Scene.batcher);
+					Realm.effects.get(d.f).fx.draw(Scene.batcher);
 				}
 			}
 		}
@@ -234,21 +238,26 @@ public class LiveMapScene extends Scene {
 		region = new TextureRegion(mapBG.getColorBufferTexture(), 0, 0, Shared.MAP_WIDTH * 32, Shared.MAP_WIDTH * 32);
 		region.flip(false, true);
 		drawRegion(region, 0, 0, false, 0, 1);
-		World.renderFX(0);
+		Realm.renderFX(0);
 		drawList.clear();
 		processMidLayer();
 		drawMapLayer(3);
-		World.renderFX(2);
+		Realm.renderFX(2);
 		region = new TextureRegion(mapFG.getColorBufferTexture(), 0, 0, Shared.MAP_WIDTH * 32, Shared.MAP_WIDTH * 32);
 		region.flip(false, true);
 		drawRegion(region, 0, 0, false, 0, 1);
-		World.renderFX(3);
+		Realm.realm.render();
+		Realm.renderFX(3);
+		
 		processTextLayer();
+		
+		
+	
 	}
 
 	void preprocessMap() {
 		if (Odyssey.pmap() == null) {
-			World.pmap[World.curMap] = new PMap();
+			Realm.pmap[Realm.curMap] = new PMap();
 			Odyssey.map().checkAll(Odyssey.pmap());
 		}
 
@@ -305,17 +314,17 @@ public class LiveMapScene extends Scene {
 	void processTextLayer() {
 		String s = "";
 		if (this instanceof PlayScene) {
-			for (Sprite c : World.players.values()) {
-				if (c.map == World.curMap) {
+			for (Sprite c : Realm.players.values()) {
+				if (c.map == Realm.curMap) {
 					drawFont(0, c.trueX() + 16, c.trueY() - 8, c.name, true, 1f);
 				}
 			}
-			for (Monster c : World.monsters.values()) {
-				if (c.map == World.curMap) {
+			for (Monster c : Realm.monsters.values()) {
+				if (c.map == Realm.curMap) {
 					drawFont(0, c.trueX() + 16, c.trueY() - 8, c.name, true, 1f);
 				}
 			}
-			for (Door c : World.doors.values()) {
+			for (Door c : Realm.doors.values()) {
 				if (c.hover) {
 					if (c.state == 0) {
 						if (c.open) {
@@ -339,11 +348,11 @@ public class LiveMapScene extends Scene {
 	}
 
 	public MapData map() {
-		return World.map();
+		return Realm.map();
 	}
 
 	public PMap pmap() {
-		return World.pmap();
+		return Realm.pmap();
 	}
 
 	void processMidLayer() {
@@ -362,7 +371,7 @@ public class LiveMapScene extends Scene {
 		int my = 0;
 		int ly = 0;
 		if (this instanceof PlayScene) {
-			for (Effect f : World.effects) {
+			for (Effect f : Realm.effects) {
 				if (f.fx != null && f.visible && f.i == 1) {
 					dt = f.render();
 					ly = 32 + f.getTrueY();
@@ -371,8 +380,8 @@ public class LiveMapScene extends Scene {
 					}
 				}
 			}
-			for (Sprite c : World.players.values()) {
-				if (c.map == World.curMap) {
+			for (Sprite c : Realm.players.values()) {
+				if (c.map == Realm.curMap) {
 					dt = new DrawTask(i, c.set, c.sprite, c.getFrame(), c.trueX(), c.trueY());
 					ly = 32 + c.trueY();
 					if (ly >= 0 && ly < Shared.MAP_WIDTH * 32 + 64) {
@@ -380,8 +389,8 @@ public class LiveMapScene extends Scene {
 					}
 				}
 			}
-			for (Monster c : World.monsters.values()) {
-				if (c.map == World.curMap) {
+			for (Monster c : Realm.monsters.values()) {
+				if (c.map == Realm.curMap) {
 					dt = new DrawTask(i, c.set, c.sprite, c.getFrame(), c.trueX(), c.trueY());
 					ly = 32 + c.trueY();
 					if (ly >= 0 && ly < Shared.MAP_WIDTH * 32 + 64) {
@@ -389,7 +398,7 @@ public class LiveMapScene extends Scene {
 					}
 				}
 			}
-			for (Door c : World.doors.values()) {
+			for (Door c : Realm.doors.values()) {
 				dt = c.getDrawTask();
 				ly = c.getZOrder();
 				if (dt != null && ly >= 0 && ly < Shared.MAP_WIDTH * 32 + 64) {

@@ -6,44 +6,27 @@ import com.bg.bearplane.engine.BearGame;
 import com.bg.bearplane.engine.BearTool;
 import com.bg.bearplane.engine.Log;
 
-public class Button {
+public class Button extends Component {
 
-	Scene scene;
+	public boolean dontRepeat = false;
+	public int interval = 0;
 
-	public int id = 0;
+	public boolean click = false;
+	public boolean sel = false;
+
+	public boolean toggle = false;
+	public boolean toggled = false;
 
 	public boolean dialog = false;
 
-	public boolean sel = false;
-	public boolean disabled = false;
-
-	public int x = 0;
-	public int y = 0;
-
-	public boolean click = false;
-
-	public int width = 32;
-	public int height = 32;
-
 	public float fontSize = 32f / 24f;
 
-	public boolean toggle = false;
+	public Button() {
 
-	public boolean toggled = false;
-
-	public boolean dontRepeat = false;
-
-	public int interval = 0;
-
-	long stamp = 0;
-
-	public String text = "button";
+	}
 
 	public Button(Scene scene, int id, int x, int y, int width, int height, String text, boolean toggle) {
-		this.scene = scene;
-		this.id = id;
-		this.x = x;
-		this.y = y;
+		super(scene, id, x, y);
 		this.width = width;
 		this.height = height;
 		this.text = text;
@@ -55,7 +38,7 @@ public class Button {
 		this(scene, id, x, y, width, height, text, false);
 	}
 
-	public void update(long tick) {
+	public void update() {
 		justClicked = false;
 		try {
 			// click = false;
@@ -72,6 +55,9 @@ public class Button {
 						stamp = tick + 500;
 					} else {
 						if (tick > stamp && interval > 0) {
+							for (int i = 0; i < interval; i++) {
+								click();
+							}
 							click();
 						}
 					}
@@ -104,7 +90,7 @@ public class Button {
 			System.exit(0);
 		}
 	}
-	
+
 	public boolean justClicked = false;
 
 	void click() {
@@ -115,13 +101,7 @@ public class Button {
 			} else {
 				toggled = !toggled;
 			}
-			if (dialog) {
-				if (scene.activeDialog != null) {
-					scene.activeDialog.choose(this);
-				}
-			} else {
-				scene.buttonPressed(id);
-			}
+			scene.buttonPressed(id);
 		} catch (Exception e) {
 			Log.error(e);
 			System.exit(0);
@@ -141,9 +121,6 @@ public class Button {
 				p = 0;
 			}
 			for (int a = 8; a < height - 8; a += 8) {
-				// for (int b = 8; b < width - 8; b += 8) {
-				// scene.drawRegion(button[p][8], x + b, y + a, false, 0, 1);
-				// }
 				scene.draw(BearGame.assets.bg[p == 1 ? 3 : 4], x + 4, y + 4, 0, 0, width - 8, height - 8);
 			}
 			// draw top left

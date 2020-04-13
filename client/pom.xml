@@ -28,6 +28,25 @@
 
 		<dependency>
 			<groupId>com.badlogicgames.gdx</groupId>
+			<artifactId>gdx-box2d</artifactId>
+			<version>1.9.10</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.badlogicgames.gdx</groupId>
+			<artifactId>gdx-box2d-platform</artifactId>
+			<classifier>natives-desktop</classifier>
+			<version>1.9.10</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.badlogicgames.box2dlights</groupId>
+			<artifactId>box2dlights</artifactId>
+			<version>1.5</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.badlogicgames.gdx</groupId>
 			<artifactId>gdx</artifactId>
 			<version>1.9.10</version>
 		</dependency>
@@ -52,7 +71,13 @@
 			<version>2.22.0-RC1</version>
 		</dependency>
 
-	
+		<!-- https://mvnrepository.com/artifact/com.kotcrab.vis/vis-ui -->
+		<dependency>
+			<groupId>com.kotcrab.vis</groupId>
+			<artifactId>vis-ui</artifactId>
+			<version>1.4.4</version>
+		</dependency>
+
 
 	</dependencies>
 

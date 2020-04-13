@@ -2,12 +2,13 @@ package com.bg.ody.client.scenes;
 
 import com.badlogic.gdx.graphics.Color;
 import com.bg.bearplane.gui.Button;
+import com.bg.bearplane.gui.CheckBox;
 import com.bg.bearplane.gui.Label;
 import com.bg.bearplane.gui.ListBox;
 import com.bg.bearplane.gui.Scene;
 import com.bg.bearplane.gui.TextBox;
 import com.bg.ody.client.core.Odyssey;
-import com.bg.ody.client.core.World;
+import com.bg.ody.client.core.Realm;
 import com.bg.ody.shared.MapOptions;
 import com.bg.ody.shared.Shared;
 
@@ -22,6 +23,10 @@ public class MapOptionsScene extends Scene {
 	Label[] lblExits = new Label[4];
 	int[] iExits = new int[4];
 	Button[] bExits = new Button[4];
+	
+	CheckBox indoors;
+	
+	TextBox alpha;
 
 	int map = 0;
 
@@ -65,13 +70,13 @@ public class MapOptionsScene extends Scene {
 
 	@Override
 	public void switchTo() {
-		map = World.curMap;
+		map = Realm.curMap;
 		MapOptions mo = Odyssey.map().options;
 		name.text = mo.name;
 		buttonPressed(mo.pk);
 		for (int i = 0; i < 4; i++) {
 			iExits[i] = mo.exit[i];
-			lblExits[i].text = mo.exit[i] + ": " + World.mapData[mo.exit[i]].options.name;
+			lblExits[i].text = mo.exit[i] + ": " + Realm.mapData[mo.exit[i]].options.name;
 		}
 		listBoxes.clear();
 		mapList = new ListBox(this, 0, 10, 10, 256, 512);
@@ -80,7 +85,7 @@ public class MapOptionsScene extends Scene {
 			if (i == 0) {
 				mapList.list.add("NOTHING");
 			} else {
-				mapList.list.add(i + ": " + World.mapData[i].options.name);
+				mapList.list.add(i + ": " + Realm.mapData[i].options.name);
 			}
 		}
 		mapList.sel = 0;
@@ -125,7 +130,7 @@ public class MapOptionsScene extends Scene {
 			case 103:
 				mid = id - 100;
 				iExits[mid] = mapList.sel;
-				lblExits[mid].text = iExits[mid] + ": " + World.mapData[iExits[mid]].options.name;
+				lblExits[mid].text = iExits[mid] + ": " + Realm.mapData[iExits[mid]].options.name;
 				break;
 			case 900:
 				change("editMap");

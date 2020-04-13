@@ -26,7 +26,7 @@ public class Game {
 
 	GameServer gameServer;
 
-	public static World world;
+	public static Realm world;
 
 	ConcurrentLinkedQueue<QueuedServerPacket> packetQueue = new ConcurrentLinkedQueue<QueuedServerPacket>();
 
@@ -45,8 +45,8 @@ public class Game {
 		MySQL.connectSQL(Shared.MYSQL_ADDRESS, Shared.MYSQL_PORT, Shared.MYSQL_DB, Shared.MYSQL_USER,
 				Shared.MYSQL_PASS);
 		Log.info("Connected to mySQL.");
-		world = new World(this);
-		World.load();
+		world = new Realm(this);
+		Realm.load();
 		Log.info("Server ready");
 	}
 

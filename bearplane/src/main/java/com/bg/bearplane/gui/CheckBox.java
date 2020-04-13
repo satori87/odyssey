@@ -4,27 +4,20 @@ import com.bg.bearplane.engine.BearGame;
 import com.bg.bearplane.engine.BearTool;
 import com.bg.bearplane.engine.Log;
 
-public class CheckBox {
-
-	Scene scene;
-
-	public int id = 0;
-
-	public boolean disabled = false;
-
-	public int x = 0;
-	public int y = 0;
+public class CheckBox extends Component {
 
 	public boolean toggled = false;
 
 	public CheckBox(Scene scene, int id, int x, int y) {
-		this.scene = scene;
-		this.id = id;
-		this.x = x;
-		this.y = y;
+		super(scene, id, x, y);
 	}
 
-	public void update(long tick) {
+	public CheckBox(Scene scene, int id, int x, int y, String text) {
+		super(scene, id, x, y);
+		this.text = text;
+	}
+
+	public void update() {
 		try {
 			int mX = Scene.input.mouseX;
 			int mY = Scene.input.mouseY;
@@ -49,7 +42,11 @@ public class CheckBox {
 	public void render() {
 		try {
 			// render thyself, peasant
-			scene.drawRegion(BearGame.assets.frame[17 + (toggled ? 1 : 0)], x - 6, y - 6, false, 0, 1);
+			scene.drawRegion(BearGame.assets.checkBox[toggled ? 1 : 0], x - 6, y - 6, false, 0, 1);
+			if (text.length() > 0) {
+				scene.drawFont(0, x + 14, y-6, text, false, 1f);
+				// scene.drawFont(type, X, Y, s, toggled, scale);
+			}
 		} catch (Exception e) {
 			Log.error(e);
 			System.exit(0);

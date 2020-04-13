@@ -19,6 +19,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.utils.ScissorStack;
 import com.bg.bearplane.engine.BearGame;
+import com.bg.bearplane.engine.BearTool;
 import com.bg.bearplane.engine.Log;
 
 public abstract class Scene {
@@ -56,7 +57,6 @@ public abstract class Scene {
 	public List<Button> buttons = new LinkedList<Button>();
 	public List<Label> labels = new LinkedList<Label>();
 	public List<TextBox> textBoxes = new LinkedList<TextBox>();
-	public List<Dialog> dialogs = new ArrayList<Dialog>();
 	public List<CheckBox> checkBoxes = new ArrayList<CheckBox>();
 	public HashMap<String, Window> windows = new HashMap<String, Window>();
 	public ArrayList<ListBox> listBoxes = new ArrayList<ListBox>();
@@ -68,14 +68,9 @@ public abstract class Scene {
 
 	public abstract void enterPressedInField(int id);
 
-	public int dialogX = 540;
-	public int dialogY = 360;
-
 	int focus = 0;
 
 	public static boolean locked = false;
-
-	public Dialog activeDialog;
 
 	public void enterPressedInList(int id) {
 
@@ -115,7 +110,7 @@ public abstract class Scene {
 				scene.update();
 			} else if (msgBoxFrame != null) {
 				// we have a msg box
-				msgBoxFrame.update(tick);
+				msgBoxFrame.updateComponent(tick);
 				if (msgBoxOK.justClicked) {
 					if (msgBoxMsgs.size() > 0) {
 						msgBoxMsgs.remove(0);
@@ -150,32 +145,17 @@ public abstract class Scene {
 			shifting = input.keyDown[59] || input.keyDown[60];
 			alting = input.keyDown[57] || input.keyDown[58];
 			ctrling = input.keyDown[129] || input.keyDown[130];
-			List<Dialog> drops = new LinkedList<Dialog>();
-			for (Dialog d : dialogs) {
-				if (!d.done) {
-					if (d.active) {
-						d.update(tick);
-					} else if (activeDialog == null) {
-						if (d.timed && (tick > d.timeStamp)) {
-							d.start(tick);
-						}
-					}
-				} else {
-					drops.add(d);
-				}
-			}
 
-			drops.clear();
 			for (Frame d : frames)
-				d.update(tick);
+				d.updateComponent(tick);
 			for (Button b : buttons)
-				b.update(tick);
+				b.updateComponent(tick);
 			for (TextBox t : textBoxes)
-				t.update(tick);
+				t.updateComponent(tick);
 			for (CheckBox c : checkBoxes)
-				c.update(tick);
+				c.updateComponent(tick);
 			for (ListBox l : listBoxes) {
-				l.update(tick);
+				l.updateComponent(tick);
 			}
 			for (int i = 0; i < 10; i++) {
 				if (input.wasMouseJustClicked[i]) { // none of the scene objects caught this
@@ -204,9 +184,9 @@ public abstract class Scene {
 			batcher.begin();
 			scene.render();
 			if (msgBoxFrame != null) {
-				msgBoxFrame.render();
+				msgBoxFrame.renderComponent();
 				String ss = msgBoxMsgs.get(0);
-				List<String> lines = Dialog.wrapText(2f, BearGame.game.getGameWidth() / 2, ss);
+				List<String> lines = BearTool.wrapText(2f, BearGame.game.getGameWidth() / 2, ss);
 				int i = 0;
 				for (String s : lines) {
 					i++;
@@ -226,25 +206,22 @@ public abstract class Scene {
 		try {
 			// overload only in some scenes
 			for (Frame d : frames) {
-				d.render();
+				d.renderComponent();
 			}
 			for (Button b : buttons) {
-				b.render();
+				b.renderComponent();
 			}
 			for (Label l : labels) {
-				l.render();
+				l.renderComponent();
 			}
 			for (TextBox t : textBoxes) {
-				t.render();
+				t.renderComponent();
 			}
 			for (CheckBox c : checkBoxes) {
-				c.render();
+				c.renderComponent();
 			}
 			for (ListBox l : listBoxes) {
-				l.render();
-			}
-			if (activeDialog != null) {
-				activeDialog.render();
+				l.renderComponent();
 			}
 		} catch (Exception e) {
 			Log.error(e);
@@ -269,45 +246,23 @@ public abstract class Scene {
 
 	public void clear() {
 		// dude make all of these extend something so you can fix this ridiculous list
-		dialogs.clear();
 		frames.clear();
 		buttons.clear();
 		labels.clear();
 		textBoxes.clear();
 		checkBoxes.clear();
 		startStamp = tick;
-		activeDialog = null;
 	}
 
 	public void start() {
 		try {
 			started = true;
 			clear();
-			startStamp = tick;
-			activeDialog = null;
-			for (Dialog d : dialogs) {
-				if (d.timed) {
-					d.timeStamp = tick + d.time;
-				}
-			}
+			startStamp = tick;			
 		} catch (Exception e) {
 			Log.error(e);
 			System.exit(0);
 		}
-	}
-
-	public Dialog addDialog(int id, int nextType, int next, int pic, int nextTime, String text) {
-		Dialog d = null;
-		try {
-			d = new Dialog(this, id, nextType, next, nextTime, pic, 600, text);
-			d.x = dialogX;
-			d.y = dialogY;
-			dialogs.add(id, d);
-		} catch (Exception e) {
-			Log.error(e);
-			System.exit(0);
-		}
-		return d;
 	}
 
 	public void addButtons(int x, int y, int width, int height, int padding, String[] text, int[] ids, boolean up,
@@ -613,8 +568,8 @@ public abstract class Scene {
 
 	public static void moveCameraTo(float x, float y) {
 		try {
-			cam.position.y = y;
-			cam.position.x = x;
+			cam.position.y = Math.round(y);
+			cam.position.x = Math.round(x);
 			cam.update();
 			batcher.setProjectionMatrix(cam.combined);
 			shapeRenderer.setProjectionMatrix(cam.combined);

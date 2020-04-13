@@ -7,8 +7,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
@@ -173,6 +175,58 @@ public class BearTool {
 			return clearBit(value,bit);
 		}
 	}
+	
+	public static List<String> wrapText(float scale, int width, String text) {
+		List<String> lines = new ArrayList<String>();
+		String line = "";
+		String word = "";
+		for (int c = 0; c < text.length(); c++) { // read string one byte at a time, and check width at every char
+			String p = text.substring(c, c + 1); // single letter
+			if (p.equals(" ")) { // finished a word, try to add it on
+				if (line.length() > 0) {
+					if (BearGame.assets.getStringWidth(line + " " + word, scale, 0, 1) > width) { // wont fit, start new
+																								// line
+						lines.add(line);
+						line = word;
+						word = "";
+					} else { // this word fits no problem
+						line += " " + word;
+						word = "";
+					}
+				} else { // we're on first word of line, is it too wide?
+					if (BearGame.assets.getStringWidth(word, scale, 0, 1) > width) {
+						line = word + " ";
+						word = "";
+					} else {
+						line = word;
+						word = "";
+					}
+				}
+			} else {
+				if (line.length() == 0 && BearGame.assets.getStringWidth(word + p, scale, 0, 1) > width) {
+					// first word is too wide, split it. i.e. AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
+					lines.add(word);
+					word = "";
+					word = p;
+				} else if (line.length() > 0
+						&& BearGame.assets.getStringWidth(line + " " + word + p, scale, 0, 1) > width) {
+					lines.add(line);
+					line = "";
+					word += p;
+				} else { // keep adding to this worddddd
+					word += p;
+				}
+			}
+		}
+		if (word.length() > 0) { // get last word, since loop only makes new lines when it reaches end
+			line += " " + word;
+		}
+		if (line.length() > 0) { // get last line, same reason as above
+			lines.add(line);
+		}
+		return lines;
+	}
+
 	
 
 }

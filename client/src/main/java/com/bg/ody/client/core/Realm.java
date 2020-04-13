@@ -13,6 +13,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.g2d.ParticleEffectPool;
+import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.IntMap;
 import com.bg.bearplane.engine.Effect;
 import com.bg.bearplane.engine.Log;
@@ -27,10 +30,14 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 
-public class World {
+import box2dLight.RayHandler;
 
-	public static World world;
+public class Realm {
 
+	public static Realm realm;
+	
+	static LightManager lightMan;
+	
 	long tick = 0;
 
 	public static int curMap = 0;
@@ -48,12 +55,13 @@ public class World {
 	public static IntMap<Door> doors = new IntMap<Door>();
 	public static List<Effect> effects = new ArrayList<Effect>();
 
-	public World() {
+	public Realm() {
 		Shared.populateEdges();
 		for (int i = 0; i < Shared.NUM_MONSTERS; i++) {
 			monsterData[i] = new MonsterData(i);
 		}
-		world = this;
+		realm = this;
+
 	}
 
 	public static void checkAll() {
@@ -69,6 +77,9 @@ public class World {
 
 	public void update(long tick) {
 		this.tick = tick;
+		if(lightMan != null) {
+		lightMan.update(tick);
+		}
 		Effect fx = null;
 		Iterator<Effect> itr = effects.iterator();
 		for (Sprite p : players.values()) {
@@ -92,6 +103,10 @@ public class World {
 		}
 	}
 
+	public void render() {
+	lightMan.render();
+	}
+
 	public static MapData map() {
 		return mapData[curMap];
 	}
@@ -104,7 +119,7 @@ public class World {
 		Effect bfx = null;
 		try {
 			bfx = new Effect(effects.size(), type, i, x, y, modX, modY, scale);
-			bfx.fx = World.effectPool.get(type).obtain();
+			bfx.fx = Realm.effectPool.get(type).obtain();
 			bfx.fx.setPosition(x * 32 + 16 + modX, y * 32 + 16 + modY);
 			bfx.fx.scaleEffect(0.1f);
 			effects.add(bfx);
@@ -182,6 +197,7 @@ public class World {
 			e.fx.free();
 		}
 		effects.clear();
+		lightMan.reset();
 		addDoors();
 		addFX();
 	}
@@ -200,6 +216,11 @@ public class World {
 			Log.error(e);
 			mapData[i] = new MapData();
 		}
+	}
+
+	public void load() {
+		lightMan = new LightManager();		
+		//lightMan.createLight(32, 64, 0.5f, true, true, 1.2f, lBody)
 	}
 
 	public static MapData getNeighbor(int m, int d) {

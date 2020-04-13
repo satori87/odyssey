@@ -14,16 +14,28 @@ import com.bg.bearplane.gui.ListBox;
 import com.bg.bearplane.gui.Scene;
 import com.bg.bearplane.gui.TextBox;
 import com.bg.ody.client.core.Odyssey;
-import com.bg.ody.client.core.World;
+import com.bg.ody.client.core.Realm;
 import com.bg.ody.shared.MapData;
 import com.bg.ody.shared.PMap;
 import com.bg.ody.shared.PTile;
 import com.bg.ody.shared.Shared;
 import com.bg.ody.shared.Tile;
+import com.kotcrab.vis.ui.widget.color.ColorPicker;
+import com.kotcrab.vis.ui.widget.color.ColorPickerAdapter;
 import com.bg.ody.shared.Registrar.Chunk;
 import com.bg.ody.shared.Registrar.DiscardMap;
 
 public class EditMapScene extends RenderEditMapScene {
+
+	byte[][] chunks = new byte[1][1];
+
+	Label hover;
+	public int lastMonsterSel = 0;
+
+	ListBox setList;
+	ListBox mapList;
+	ListBox monsterList;
+	ListBox fxList;
 
 	Frame frmWarp = null;
 	Label lblWarpMap;
@@ -64,81 +76,48 @@ public class EditMapScene extends RenderEditMapScene {
 	int lastFXType = 0;
 	Label lblFXType;
 
-	ListBox setList;
-	ListBox mapList;
-	ListBox monsterList;
-	ListBox fxList;
+	Frame frmLight = null;
+	int[] lastLight = new int[9];
+	Label[] lblLight = new Label[9];
+	int[] maxLight = new int[9];
+	int[] minLight = new int[9];
+	String[] strLight = new String[9];
+	int lastLightFlags = 0;
+	CheckBox lightIsSoft;
+	CheckBox lightIsXRay;
+	CheckBox lightFlickers;
 
-	byte[][] chunks = new byte[1][1];
-
-	Label hover;
-
-	public int lastMonsterSel = 0;
-
-	@Override
-	public void switchTo() {
-		try {
-			input.mouseDown[0] = false;
-			input.wasMouseJustClicked[0] = false;
-			super.switchTo();
-			Shared.GAME_WIDTH = 1376;
-			Gdx.graphics.setWindowedMode(Shared.GAME_WIDTH, Shared.GAME_HEIGHT);
-			setupScreen(Shared.GAME_WIDTH, Shared.GAME_HEIGHT);
-			scrollX = Math.round(cam.position.x / 32 - Shared.GAME_WIDTH / 64);
-			scrollY = Math.round(cam.position.y / 32 - Shared.GAME_HEIGHT / 64);
-			moveCameraTo(Shared.GAME_WIDTH / 2, Shared.GAME_HEIGHT / 2);
-			if (editMode == 9) {
-				switchAtt(att);
-			}
-
-			listBoxes.clear();
-
-			setList = new ListBox(this, 0, 1104, 35, 256, 530);
-			listBoxes.add(setList);
-			for (String s : Shared.tilesets) {
-				setList.list.add(s);
-			}
-
-			mapList = new ListBox(this, 1, 1104, 35, 256, 530);
-			mapList.sel = 0;
-			for (int i = 0; i < Shared.NUM_MAPS; i++) {
-				if (World.mapData[i] != null) {
-					mapList.list.add(i + ": " + World.mapData[i].options.name);
-				}
-			}
-			mapList.sel = World.curMap;
-			mapList.visible = false;
-			listBoxes.add(mapList);
-
-			monsterList = new ListBox(this, 2, 1104, 35, 256, 530);
-			monsterList.sel = 0;
-			for (int i = 0; i < Shared.NUM_MONSTERS; i++) {
-				if (World.monsterData[i] != null) {
-					monsterList.list.add(i + ": " + World.monsterData[i].name);
-				}
-			}
-			monsterList.visible = false;
-			monsterList.sel = lastMonsterSel;
-			listBoxes.add(monsterList);
-
-			fxList = new ListBox(this, 3, 1104, 35, 256, 530);
-			fxList.sel = 0;
-			for (int i = 0; i < 255; i++) {
-				if (World.effectData.get(i) != null) {
-					fxList.list.add(i + ": " + World.effectData.get(i).getEmitters().get(0).getName());
-				}
-			}
-			fxList.visible = false;
-			fxList.sel = lastFXType;
-			listBoxes.add(fxList);
-
-			if (editMode == 9) {
-				switchAtt(att);
-			}
-
-		} catch (Exception e) {
-			Log.error(e);
+	void startLight() {
+		int s = 36;
+		int i = 0;
+		Button b = null;
+		frmLight = new Frame(this, 584, 184, 460, 370, false, false, true);
+		frames.add(frmLight);
+		frmLight.visible = false;
+		frmLight.labels.add(new Label(this, 776, 210, 2f, "Light Source", Color.WHITE, true));
+		minLight = new int[] { 0, 0, -64, -64, 0, 0, 0, 0, 0 };
+		maxLight = new int[] { 255, 1000, 64, 64, 255, 255, 255, 255, 30 };
+		strLight = new String[] { "Alpha", "Size", "Mod X", "Mod Y", "Red", "Green", "Blue", "RayCount", "Softness" };
+		for (i = 0; i < 9; i++) {
+			lblLight[i] = new Label(this, 776, 240 + i * s, 1f, lastLight[i] + "", Color.WHITE, true);
+			frmLight.labels.add(lblLight[i]);
+			b = new Button(this, 700 + i * 2, 676, 240 + i * s, 32, 24, "-");
+			b.interval = 8;
+			frmLight.buttons.add(b);
+			b = new Button(this, 701 + i * 2, 876, 240 + i * s, 32, 24, "+");
+			b.interval = 8;
+			frmLight.buttons.add(b);
 		}
+		i = 1;
+		lightIsSoft = new CheckBox(this, 11, 906, 340 + i * s, "Soft Shadows");
+		i = 2;
+		lightFlickers = new CheckBox(this, 11, 906, 340 + i * s, "Flickers");
+		i = 3;
+		lightIsXRay = new CheckBox(this, 11, 906, 340 + i * s, "X-Ray");
+
+		frmLight.checkBoxes.add(lightIsSoft);
+		frmLight.checkBoxes.add(lightFlickers);
+		frmLight.checkBoxes.add(lightIsXRay);
 	}
 
 	void startDoor() {
@@ -328,11 +307,75 @@ public class EditMapScene extends RenderEditMapScene {
 
 	}
 
+	@Override
+	public void switchTo() {
+		try {
+			input.mouseDown[0] = false;
+			input.wasMouseJustClicked[0] = false;
+			super.switchTo();
+			Shared.GAME_WIDTH = 1376;
+			Gdx.graphics.setWindowedMode(Shared.GAME_WIDTH, Shared.GAME_HEIGHT);
+			setupScreen(Shared.GAME_WIDTH, Shared.GAME_HEIGHT);
+			scrollX = Math.round(cam.position.x / 32 - Shared.GAME_WIDTH / 64);
+			scrollY = Math.round(cam.position.y / 32 - Shared.GAME_HEIGHT / 64);
+			moveCameraTo(Shared.GAME_WIDTH / 2, Shared.GAME_HEIGHT / 2);
+
+			listBoxes.clear();
+
+			setList = new ListBox(this, 0, 1104, 35, 256, 530);
+			listBoxes.add(setList);
+			for (String s : Shared.tilesets) {
+				setList.list.add(s);
+			}
+
+			mapList = new ListBox(this, 1, 1104, 35, 256, 530);
+			mapList.sel = 0;
+			for (int i = 0; i < Shared.NUM_MAPS; i++) {
+				if (Realm.mapData[i] != null) {
+					mapList.list.add(i + ": " + Realm.mapData[i].options.name);
+				}
+			}
+			mapList.sel = Realm.curMap;
+			mapList.visible = false;
+			listBoxes.add(mapList);
+
+			monsterList = new ListBox(this, 2, 1104, 35, 256, 530);
+			monsterList.sel = 0;
+			for (int i = 0; i < Shared.NUM_MONSTERS; i++) {
+				if (Realm.monsterData[i] != null) {
+					monsterList.list.add(i + ": " + Realm.monsterData[i].name);
+				}
+			}
+			monsterList.visible = false;
+			monsterList.sel = lastMonsterSel;
+			listBoxes.add(monsterList);
+
+			fxList = new ListBox(this, 3, 1104, 35, 256, 530);
+			fxList.sel = 0;
+			for (int i = 0; i < 255; i++) {
+				if (Realm.effectData.get(i) != null) {
+					fxList.list.add(i + ": " + Realm.effectData.get(i).getEmitters().get(0).getName());
+				}
+			}
+			fxList.visible = false;
+			fxList.sel = lastFXType;
+			listBoxes.add(fxList);
+
+			if (editMode == 9) {
+				switchAtt(att);
+			}
+
+		} catch (Exception e) {
+			Log.error(e);
+		}
+	}
+
 	void setupAttPanels() {
 		startWarp();
 		startSpawn();
 		startDoor();
 		startFX();
+		startLight();
 	}
 
 	@Override
@@ -464,7 +507,6 @@ public class EditMapScene extends RenderEditMapScene {
 					attData[2] = Shared.MAP_WIDTH - 1;
 				lastWarpY = attData[0];
 				break;
-
 			}
 		} else if (id >= 400 && id < 500) {
 			switch (id % 400) {
@@ -566,6 +608,21 @@ public class EditMapScene extends RenderEditMapScene {
 				fxList.sel = lastFXType;
 				break;
 			}
+		} else if (id >= 700 && id < 800) {
+			mid = id - 700;
+			int i = (mid / 2) + 1;
+			if (mid % 2 == 0) {
+				attData[i]--;
+				if (attData[i] < minLight[i - 1]) {
+					attData[i] = minLight[i - 1];
+				}
+			} else {
+				attData[i]++;
+				if (attData[i] > maxLight[i - 1]) {
+					attData[i] = maxLight[i - 1];
+				}
+			}
+			lastLight[i - 1] = attData[i];
 		}
 	}
 
@@ -767,10 +824,38 @@ public class EditMapScene extends RenderEditMapScene {
 			if (piece < 4) {
 				if (curWallMod > 0) {
 					if (t.wall[piece]) {
-						t.wall[piece] = wallButton == 0 ? true : false;
+
+						if (wallButton == 0) {
+							t.wall[piece] = true;
+							t.cast[piece] = wallShadow ? true : false;
+						} else {
+							t.wall[piece] = false;
+							t.cast[piece] = false;
+						}
+
+					}
+					if (wallButton == 1) {
+						t.decorated = false;
+						for (int i = 0; i < 6; i++) {
+							for (int b = 0; b < 4; b++) {
+								t.wallPiece[i][b] = 0;
+							}
+						}
 					}
 				} else {
-					t.wall[piece] = wallButton == 0 ? true : false;
+					if (wallButton == 0) {
+						t.wall[piece] = true;
+						t.cast[piece] = wallShadow ? true : false;
+					} else {
+						t.wall[piece] = false;
+						t.cast[piece] = false;
+						t.decorated = false;
+						for (int i = 0; i < 6; i++) {
+							for (int b = 0; b < 4; b++) {
+								t.wallPiece[i][b] = 0;
+							}
+						}
+					}
 				}
 				if (curWall > 0) {
 					if (t.wall[piece] || t.decorated) {
@@ -791,14 +876,17 @@ public class EditMapScene extends RenderEditMapScene {
 									t.wallPiece[curHeight - 1][1] = curWallMod + 9 + modT;
 								}
 								t.decorated = true;
-								if (curHeight == 1) {
+								if (curHeight == 1 && curWallMod < 3) {
 									t.wall[1] = false;
+									t.cast[1] = false;
 									if (down != null) {
 										down.wall[0] = false;
+										down.cast[0] = false;
 									}
 								}
 							}
 						} else if (piece == 2) {
+							t.vheight[0] = curHeight;
 							for (int i = 0; i < curHeight - 1; i++) {
 								t.wallPiece[i][0] = 9 + modT;
 							}
@@ -807,6 +895,7 @@ public class EditMapScene extends RenderEditMapScene {
 								up.wallPiece[curHeight - 1][3] = 4 + modT;
 							}
 						} else if (piece == 3) {
+							t.vheight[1] = curHeight;
 							for (int i = 0; i < curHeight - 1; i++) {
 								t.wallPiece[i][0] = 8 + modT;
 							}
@@ -868,19 +957,19 @@ public class EditMapScene extends RenderEditMapScene {
 
 	void commit() {
 		lock();
-		byte[] str = BearTool.serialize(World.mapData[World.curMap]);
+		byte[] str = BearTool.serialize(Realm.mapData[Realm.curMap]);
 		chunks = BearTool.divideArray(str, Shared.CHUNK_SIZE);
 		for (int i = 0; i < chunks.length; i++) {
-			Odyssey.game.sendTCP(new Chunk(chunks[i], World.curMap, i == chunks.length - 1 ? 1 : 0, i));
+			Odyssey.game.sendTCP(new Chunk(chunks[i], Realm.curMap, i == chunks.length - 1 ? 1 : 0, i));
 		}
 	}
 
 	void discard() {
-		int m = World.curMap;
-		World.mapData[m] = null;
-		World.loadMap(m);
-		World.pmap[m] = new PMap();
-		World.mapData[m].checkAll(World.pmap[m]);
+		int m = Realm.curMap;
+		Realm.mapData[m] = null;
+		Realm.loadMap(m);
+		Realm.pmap[m] = new PMap();
+		Realm.mapData[m].checkAll(Realm.pmap[m]);
 		Scene.lock();
 		Odyssey.game.sendTCP(new DiscardMap());
 	}
@@ -901,6 +990,13 @@ public class EditMapScene extends RenderEditMapScene {
 	void checkKeys() {
 		for (Integer a : Scene.input.keyPress) {
 			switch (a) {
+			case Keys.C:
+				// if (input.keyDown[Keys.CONTROL_LEFT] || input.keyDown[Keys.CONTROL_RIGHT]) {
+				// if(!mapBoxing && !tileBoxing) {
+				// copy = true;
+				// }
+				// }
+				break;
 			case Keys.SHIFT_LEFT:
 			case Keys.SHIFT_RIGHT:
 				shift = !shift;
@@ -948,7 +1044,7 @@ public class EditMapScene extends RenderEditMapScene {
 	void updateLabels() {
 		switch (att) {
 		case 2: // spawn
-			lblSpawnType.text = (attData[0] + 1) + ": " + World.monsterData[attData[0]].name;
+			lblSpawnType.text = (attData[0] + 1) + ": " + Realm.monsterData[attData[0]].name;
 			int r = 0;
 			int c = 0;
 			int min = 0;
@@ -984,7 +1080,7 @@ public class EditMapScene extends RenderEditMapScene {
 			spawnMax.text = attData[4] + "";
 			break;
 		case 3: // warp
-			lblWarpMap.text = "Map " + attData[0] + ": " + World.mapData[attData[0]].options.name;
+			lblWarpMap.text = "Map " + attData[0] + ": " + Realm.mapData[attData[0]].options.name;
 			lblWarpX.text = "X: " + attData[1] + "";
 			lblWarpY.text = "Y: " + attData[2] + "";
 			break;
@@ -999,19 +1095,24 @@ public class EditMapScene extends RenderEditMapScene {
 			lblFXLayer.text = "Layer: " + Shared.fxLayerName[attData[1]];
 			lblFXX.text = "X Mod: " + attData[2] + "";
 			lblFXY.text = "Y Mod: " + attData[3] + "";
-			ParticleEffect pe = World.effectData.get(attData[4]);
+			ParticleEffect pe = Realm.effectData.get(attData[4]);
 			if (pe != null) {
 				lblFXType.text = "fx" + attData[4] + ": " + pe.getEmitters().get(0).getName();
 			} else {
 				lblFXType.text = "fx " + attData[4] + ": invalid";
 			}
 			break;
+		case 6: // light
+			for (int i = 0; i < 9; i++) {
+				lblLight[i].text = strLight[i] + ": " + attData[i + 1];
+			}
+			break;
 		}
 		lblTileSet.text = Shared.tilesets[curSet];
 		if (curHoverX >= 0 && curHoverX < Shared.MAP_WIDTH && curHoverY >= 0 && curHoverY < Shared.MAP_WIDTH) {
-			hover.text = "Map: " + World.curMap + " X: " + curHoverX + " Y: " + curHoverY;
+			hover.text = "Map: " + Realm.curMap + " X: " + curHoverX + " Y: " + curHoverY;
 		} else {
-			hover.text = "Map: " + World.curMap;
+			hover.text = "Map: " + Realm.curMap;
 		}
 		hover.text += " (" + input.mouseX + "," + input.mouseY + ")";
 	}
@@ -1042,6 +1143,7 @@ public class EditMapScene extends RenderEditMapScene {
 			dmx = (sx - 20) - mx * 32;
 			dmy = (sy - 40) - my * 32;
 		}
+
 		checkKeys();
 		updateLabels();
 		scrollMap();
@@ -1089,7 +1191,7 @@ public class EditMapScene extends RenderEditMapScene {
 					break;
 				}
 			}
-			if (curSelTile > 0 || tileBox || editMode == 7 || editMode == 9) {
+			if (curSelTile > 0 || tileBox || editMode == 7 || editMode == 8 || editMode == 9) {
 				if (input.mouseDown[0]) {
 					LClickMap(mx, my, dmx, dmy);
 				} else if (input.mouseDown[1]) {
@@ -1160,6 +1262,25 @@ public class EditMapScene extends RenderEditMapScene {
 						if (!halting) {
 							placeWalls(0);
 						}
+					} else if (editMode == 8) {
+						int smx = ((input.mouseX - 20) % 32) / 4;
+						int smy = ((input.mouseY - 40) % 32) / 4;
+						int mmx = mx + scrollX;
+						int mmy = my + scrollY;
+						if (inBounds(mmx, mmy)) {
+							if (curShadow == 0) {
+								map().shadow[mmx * 8 + smx][mmy * 8 + smy] = true;
+							} else {
+								for (int wxx = -(curShadow + 1) / 2; wxx < (curShadow + 1) / 2; ++wxx) {
+									for (int wyy = -(curShadow + 1) / 2; wyy < (curShadow + 1) / 2; ++wyy) {
+										if (wxx + smx + mmx * 8 >= 0 && wyy + smy + mmy * 8 >= 0
+												&& wxx + smx + mmx * 8 < 512 && wyy + smy + mmy * 8 < 512) {
+											map().shadow[mmx * 8 + smx + wxx][mmy * 8 + smy + wyy] = true;
+										}
+									}
+								}
+							}
+						}
 					} else if (editMode == 9) {
 						if (!halting) {
 							int msx = mx + scrollX;
@@ -1168,7 +1289,7 @@ public class EditMapScene extends RenderEditMapScene {
 							if (alting) {
 								if (map().tile[msx][msy].att[i] > 0) {
 									att = map().tile[msx][msy].att[i];
-									for (int c = 0; c < 6; c++) {
+									for (int c = 0; c < 10; c++) {
 										attData[c] = map().tile[msx][msy].attData[i][c];
 									}
 									switch (att) {
@@ -1207,13 +1328,22 @@ public class EditMapScene extends RenderEditMapScene {
 										lastFXType = attData[4];
 										fxList.sel = lastFXType;
 										break;
+									case 6: // light
+										for (int j = 0; j < 9; j++) {
+											lastLight[j] = attData[j + 1];
+										}
+										lightFlickers.toggled = BearTool.checkBit(attData[0], 0);
+										lightIsSoft.toggled = BearTool.checkBit(attData[0], 1);
+										lightIsXRay.toggled = BearTool.checkBit(attData[0], 2);
+										lastLightFlags = attData[0];
+										break;
 									}
 									switchAtt(att);
 								}
 							} else {
 								if (MapData.inBounds(msx, msy)) {
 									map().tile[msx][msy].att[i] = att;
-									for (int c = 0; c < 6; c++) {
+									for (int c = 0; c < 10; c++) {
 										map().tile[msx][msy].attData[i][c] = attData[c];
 									}
 								}
@@ -1259,6 +1389,25 @@ public class EditMapScene extends RenderEditMapScene {
 					}
 				} else if (editMode == 7) {
 					placeWalls(1);
+				} else if (editMode == 8) {
+					int smx = ((input.mouseX - 20) % 32) / 4;
+					int smy = ((input.mouseY - 40) % 32) / 4;
+					int mmx = mx + scrollX;
+					int mmy = my + scrollY;
+					if (inBounds(mmx, mmy)) {
+						if (curShadow == 0) {
+							map().shadow[mmx * 8 + smx][mmy * 8 + smy] = false;
+						} else {
+							for (int wxx = -(curShadow + 1) / 2; wxx < (curShadow + 1) / 2; ++wxx) {
+								for (int wyy = -(curShadow + 1) / 2; wyy < (curShadow + 1) / 2; ++wyy) {
+									if (wxx + smx + mmx * 8 >= 0 && wyy + smy + mmy * 8 >= 0
+											&& wxx + smx + mmx * 8 < 512 && wyy + smy + mmy * 8 < 512) {
+										map().shadow[mmx * 8 + smx + wxx][mmy * 8 + smy + wyy] = false;
+									}
+								}
+							}
+						}
+					}
 				} else if (editMode == 9) {
 					if (!halting) {
 						int msx = mx + scrollX;
@@ -1268,7 +1417,7 @@ public class EditMapScene extends RenderEditMapScene {
 
 						} else {
 							map().tile[msx][msy].att[i] = 0;
-							for (int c = 0; c < 6; c++) {
+							for (int c = 0; c < 10; c++) {
 								map().tile[msx][msy].attData[i][c] = 0;
 							}
 						}
@@ -1280,6 +1429,7 @@ public class EditMapScene extends RenderEditMapScene {
 
 	public void render() {
 		super.render();
+
 	}
 
 	void changeTile(int set, int tile) {
@@ -1350,7 +1500,11 @@ public class EditMapScene extends RenderEditMapScene {
 				boxUp = ty * 16 + tx;
 				updateBox();
 				if (editMode < 7) {
+					// if (alting) {
+
+					// } else {
 					placeField(boxButton == 0 ? curSelSet : 0, boxButton == 0 ? curSelTile : 0, editMode);
+					// }
 				} else if (editMode == 7) {
 					if (boxButton == 1) {
 						clearWallField(tx, ty);
@@ -1402,12 +1556,12 @@ public class EditMapScene extends RenderEditMapScene {
 				int i = shift ? 1 : 0;
 				if (val > 0) {
 					map().tile[x + scrollX][y + scrollY].att[i] = att;
-					for (int c = 0; c < 6; c++) {
+					for (int c = 0; c < 10; c++) {
 						map().tile[x + scrollX][y + scrollY].attData[i][c] = attData[c];
 					}
 				} else {
 					map().tile[x + scrollX][y + scrollY].att[i] = 0;
-					for (int c = 0; c < 6; c++) {
+					for (int c = 0; c < 10; c++) {
 						map().tile[x + scrollX][y + scrollY].attData[i][c] = 0;
 					}
 				}
@@ -1545,6 +1699,14 @@ public class EditMapScene extends RenderEditMapScene {
 						}
 					} else if (ty == 9) {
 						curWallMod = tx;
+					} else if (ty == 5 && tx == 0) {
+						wallShadow = true;
+					} else if (ty == 6 && tx == 0) {
+						wallShadow = false;
+					}
+				} else if (editMode == 8) {
+					if (ty < 1 && tx < 8) {
+						curShadow = tx;
 					}
 				} else if (editMode == 9) {
 					int a = ty * 16 + tx + 1;
@@ -1612,6 +1774,16 @@ public class EditMapScene extends RenderEditMapScene {
 			fxList.visible = true;
 			fxList.sel = lastFXType;
 			break;
+		case 6: // light
+			// flags attData[0] =
+			attData[0] = lastLightFlags;
+			lightFlickers.toggled = BearTool.checkBit(attData[0], 0);
+			lightIsSoft.toggled = BearTool.checkBit(attData[0], 1);
+			lightIsXRay.toggled = BearTool.checkBit(attData[0], 2);
+			for (int i = 0; i < 9; i++) {
+				attData[i + 1] = lastLight[i];
+				frmLight.visible = true;
+			}
 		}
 	}
 
@@ -1628,6 +1800,7 @@ public class EditMapScene extends RenderEditMapScene {
 		monsterList.visible = false;
 		setList.visible = false;
 		frmWarp.visible = false;
+		frmLight.visible = false;
 		frmSpawn.visible = false;
 		frmDoor.visible = false;
 		frmFX.visible = false;
@@ -1640,6 +1813,11 @@ public class EditMapScene extends RenderEditMapScene {
 			if (id == 10) {
 				attData[2] = BearTool.setBit(attData[2], 0, doorOpen.toggled);
 				attData[2] = BearTool.setBit(attData[2], 1, doorGate.toggled);
+			} else if (id == 11) {
+				attData[0] = BearTool.setBit(attData[0], 0, lightFlickers.toggled);
+				attData[0] = BearTool.setBit(attData[0], 1, lightIsSoft.toggled);
+				attData[0] = BearTool.setBit(attData[0], 2, lightIsXRay.toggled);
+				lastLightFlags = attData[0];
 
 			}
 		}

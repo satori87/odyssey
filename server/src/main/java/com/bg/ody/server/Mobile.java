@@ -33,7 +33,7 @@ public class Mobile extends GameConnection {
 	}
 
 	public Map map() {
-		return World.map[map];
+		return Realm.map[map];
 	}
 
 	public int getMoveTime(boolean run) {

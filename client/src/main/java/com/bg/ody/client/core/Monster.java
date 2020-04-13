@@ -22,7 +22,7 @@ public class Monster extends Sprite {
 	}
 
 	public MonsterData data() {
-		return World.monsterData[type];
+		return Realm.monsterData[type];
 	}
 
 }

@@ -4,7 +4,7 @@ import com.bg.bearplane.gui.Button;
 import com.bg.bearplane.gui.ListBox;
 import com.bg.bearplane.gui.Scene;
 import com.bg.ody.client.core.Odyssey;
-import com.bg.ody.client.core.World;
+import com.bg.ody.client.core.Realm;
 
 public class EditListScene extends Scene {
 
@@ -21,7 +21,7 @@ public class EditListScene extends Scene {
 			break;
 		case 2:
 			for (int i = 0; i < 255; i++) {
-				list.list.add((i + 1) + ": " + World.monsterData[i].name);
+				list.list.add((i + 1) + ": " + Realm.monsterData[i].name);
 			}
 			break;
 		}
@@ -39,7 +39,7 @@ public class EditListScene extends Scene {
 			Odyssey.game.editNum = list.sel;
 			Odyssey.game.listScroll = list.scroll;
 			change("editMonster");
-			Odyssey.editMonsterScene.load(World.monsterData[list.sel]);
+			Odyssey.editMonsterScene.load(Realm.monsterData[list.sel]);
 		}
 	}
 
