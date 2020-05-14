@@ -94,7 +94,7 @@ public class LightManager {
 		final Calendar rightNow = Calendar.getInstance();
 		int m = rightNow.get(12);
 		final int s = rightNow.get(13);
-		m = 0;
+		m = 10;
 		rayHandler.setAmbientLight(0.0f, 0.0f, 0.0f, dark[m * 60 + s]);
 		// }
 
@@ -171,6 +171,7 @@ public class LightManager {
 				}
 			}
 		}
+
 		for (x = 0; x < Shared.MAP_WIDTH; ++x) {
 			for (y = 0; y < Shared.MAP_WIDTH; ++y) {
 				t = Odyssey.map().tile[x][y];

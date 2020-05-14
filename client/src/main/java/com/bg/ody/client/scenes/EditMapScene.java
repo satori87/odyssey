@@ -858,7 +858,7 @@ public class EditMapScene extends RenderEditMapScene {
 					}
 				}
 				if (curWall > 0) {
-					if (t.wall[piece] || t.decorated) {
+					if (t.wall[piece] || t.wallPiece[0][1] > 0) {
 						int modT = (curWall - 1) * 16;
 						if (piece == 1) {
 							if (curWallMod == 0) {

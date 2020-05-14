@@ -36,7 +36,7 @@ public class Shared {
 
 	public static final int MAX_MONSTERS = 50;
 
-	 public static final String SERVER_IP = "server.bearable.games";
+	public static final String SERVER_IP = "server.bearable.games";
 	//public static final String SERVER_IP = "127.0.0.1";
 	public static final String CLIENT_VERSION = "bananas17";
 
@@ -94,9 +94,10 @@ public class Shared {
 		edges[1][1][1][1] = 15;
 	}
 
-	public static String[] tilesets = new String[] { "magic-terrain", "magic-nature", "magic-buildings",
-			"magic-doodads", "magic-doodads2", "carpets", "floors", "gore", "misc", "nature", "hdoor", "vdoor",
-			"auto-caves", "auto-mountains", "auto-terrain", "auto-terrain2", "auto-walls", "auto-walls2" };
+	public static String[] tilesets = new String[] { "magic-terrain", "magic-trees", "magic-nature", "magic-buildings",
+			"magic-doodads", "magic-doodads2", "carpets", "floors-brick", "floors-cobble", "floors-tile","floors-wood","floors-misc","misc", "markings", "walls",
+			"hdoor", "vdoor", "auto-caves", "auto-mountains", "auto-terrain", "auto-terrain2", "auto-walls",
+			"auto-walls2" };
 	public static String[] spritesets = new String[] { "players", "animals", "beasts", "humanoid", "supernatural",
 			"human-common", "human-fighter", "human-magic" };
 	public static String[] dirNames = new String[] { "up", "down", "left", "right" };
