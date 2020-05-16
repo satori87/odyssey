@@ -1,0 +1,6 @@
+New: Slider, Dialog, Window
+Frames: titlebar
+All: add self label, relaltive positioning
+Button: add arrow buttons
+ListBox: add 2 arrow buttons and slider
+Label: add arrow buttons
