@@ -1,5 +1,6 @@
 package com.bg.ody.server;
 
+import com.bg.bearplane.engine.BearTool;
 import com.bg.bearplane.engine.Log;
 
 public class Mobile extends GameConnection {
@@ -28,8 +29,41 @@ public class Mobile extends GameConnection {
 	public int maxHP = 0;
 	public int hp = 0;
 
+	public Mobile target = null;
+
 	public Mobile(Game game) {
 		this.game = game;
+	}
+
+	public boolean playing() {
+		return true;
+	}
+
+	public boolean inRange(Mobile target, int range) {
+		return inRange(target.x, target.y, range);
+	}
+
+	public boolean inRange(int nx, int ny, int range) {
+		return (int) distanceTo(nx, ny) <= range;
+	}
+
+	public double distanceTo(int nx, int ny) {
+		return BearTool.distance(x, y, nx, ny);
+	}
+
+	public double distanceTo(Mobile target) {
+		return distanceTo(target.x, target.y);
+	}
+
+	public boolean adjacentTo(int nx, int ny) {
+		boolean a = false;
+		if (nx == x && (ny == y + 1 || ny == y - 1)) {
+			a = true;
+		}
+		if (ny == y && (nx == x + 1 || nx == x - 1)) {
+			a = true;
+		}
+		return a;
 	}
 
 	public Map map() {

@@ -6,10 +6,8 @@ package com.bg.bearplane.furpatch;
 
 import java.security.MessageDigest;
 import com.badlogic.gdx.graphics.Color;
-import java.util.Iterator;
 import java.io.File;
 import java.util.Arrays;
-import java.util.Collection;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.Gdx;
 import java.util.ArrayList;
@@ -163,7 +161,6 @@ public class Patch {
 				}
 			} else {
 				this.curTask = 5;
-				
 
 				downloadFile("whatsnew.html", false);
 			}
@@ -219,7 +216,7 @@ public class Patch {
 			}
 		}
 	}
-	
+
 	private void readReleaseFile() {
 		news.add(" ");
 		news.add(" ");

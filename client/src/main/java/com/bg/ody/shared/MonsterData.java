@@ -31,6 +31,8 @@ public class MonsterData implements Serializable {
 	public int wanderRange = 0;
 	public int stepsPerWalk = 0;
 
+	public int sight = 8;
+	
 	public MonsterData() {
 
 	}

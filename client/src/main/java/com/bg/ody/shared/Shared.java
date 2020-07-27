@@ -36,11 +36,13 @@ public class Shared {
 
 	public static final int MAX_MONSTERS = 50;
 
-	public static final String SERVER_IP = "server.bearable.games";
-	//public static final String SERVER_IP = "127.0.0.1";
+	public static final boolean PROCESS_IDLE_MAPS = true;
+
+	// public static final String SERVER_IP = "server.bearable.games";
+	public static final String SERVER_IP = "127.0.0.1";
 	public static final String CLIENT_VERSION = "bananas17";
 
-	public static final String MYSQL_ADDRESS = "server.bearable.games";
+	public static final String MYSQL_ADDRESS = "patch.bearable.games";
 
 	public static final int MYSQL_PORT = 3306;
 	public static final String MYSQL_DB = "odyssey";
@@ -52,6 +54,20 @@ public class Shared {
 	public static final String PUBLIC_WEBSITE = "http://bearable.games";
 
 	public static short[][][][] edges = new short[2][2][2][2];
+
+	public static String[] tilesets = new String[] { "magic-terrain", "magic-trees", "magic-nature", "magic-buildings",
+			"magic-doodads", "magic-doodads2", "carpets", "floors-brick", "floors-cobble", "floors-tile", "floors-wood",
+			"floors-misc", "misc", "markings", "walls", "hdoor", "vdoor", "auto-caves", "auto-mountains",
+			"auto-terrain", "auto-terrain2", "auto-walls", "auto-walls2" };
+	public static String[] spritesets = new String[] { "players", "animals", "beasts", "humanoid", "supernatural",
+			"human-common", "human-fighter", "human-magic" };
+	public static String[] dirNames = new String[] { "up", "down", "left", "right" };
+	public static String[] layerName = new String[] { "Ground", "BG1", "BG2", "Mid", "FG1", "FG2", "Ceiling", "Wall",
+			"Shadow", "Att" };
+	public static String[] panelName = new String[] { "Options", "Import", "Export", "Test", "Discard", "Commit" };
+	public static String[] fxLayerName = new String[] { "BG3", "Mid", "FG0", "Above All" };
+	public static String[] gateName = new String[] { "Swings", "Slides Up", "Slides Down", "Slides Left",
+			"Slides Right", "Splits", "Disappears" };
 
 	public static boolean validName(String name) {
 		if (name != null && name.length() >= MIN_NAME_LEN && name.length() <= MAX_NAME_LEN) {
@@ -93,20 +109,6 @@ public class Shared {
 		edges[1][1][1][0] = 11;
 		edges[1][1][1][1] = 15;
 	}
-
-	public static String[] tilesets = new String[] { "magic-terrain", "magic-trees", "magic-nature", "magic-buildings",
-			"magic-doodads", "magic-doodads2", "carpets", "floors-brick", "floors-cobble", "floors-tile","floors-wood","floors-misc","misc", "markings", "walls",
-			"hdoor", "vdoor", "auto-caves", "auto-mountains", "auto-terrain", "auto-terrain2", "auto-walls",
-			"auto-walls2" };
-	public static String[] spritesets = new String[] { "players", "animals", "beasts", "humanoid", "supernatural",
-			"human-common", "human-fighter", "human-magic" };
-	public static String[] dirNames = new String[] { "up", "down", "left", "right" };
-	public static String[] layerName = new String[] { "Ground", "BG1", "BG2", "Mid", "FG1", "FG2", "Ceiling", "Wall",
-			"Shadow", "Att" };
-	public static String[] panelName = new String[] { "Options", "Import", "Export", "Test", "Discard", "Commit" };
-	public static String[] fxLayerName = new String[] { "BG3", "Mid", "FG0", "Above All" };
-	public static String[] gateName = new String[] { "Swings", "Slides Up", "Slides Down", "Slides Left",
-			"Slides Right", "Splits", "Disappears" };
 
 	public static int getTileSetNum(String name) {
 		for (int i = 0; i < tilesets.length; i++) {

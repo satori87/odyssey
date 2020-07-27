@@ -1,7 +1,7 @@
 package com.bg.ody.server;
 
 import java.util.ArrayList;
-
+import java.util.List;
 import com.bg.bearplane.ai.FlatTiledGraph;
 import com.bg.bearplane.ai.FlatTiledNode;
 import com.bg.bearplane.ai.IndexedAStarPathFinder;
@@ -187,7 +187,7 @@ public class Map {
 	}
 
 	public void update(long tick) {
-		if (players.size() > 0 || tick - lastHadPlayerAt < 10000) {
+		if (players.size() > 0 || tick - lastHadPlayerAt < 10000 || Shared.PROCESS_IDLE_MAPS) {
 			this.tick = tick;
 			Monster m;
 			for (Spawner sp : spawners) {
@@ -306,6 +306,41 @@ public class Map {
 		return true;
 	}
 
+	List<Player> getPlayersNear(int nx, int ny, int range) {
+		List<Player> mobs = new ArrayList<Player>();
+		for (Player p : players) {
+			if (p.inRange(nx, ny, range)) {
+				mobs.add(p);
+			}
+		}
+		return mobs;
+	}
+
+	List<Monster> getMonstersNear(int nx, int ny, int range) {
+		List<Monster> mobs = new ArrayList<Monster>();
+		for (Monster m : monsters) {
+			if (m.inRange(nx, ny, range) && !m.dead) {
+				mobs.add(m);
+			}
+		}
+		return mobs;
+	}
+
+	List<Mobile> getMobsNear(int nx, int ny, int range) {
+		List<Mobile> mobs = new ArrayList<Mobile>();
+		for (Monster m : monsters) {
+			if (m.inRange(nx, ny, range) && !m.dead) {
+				mobs.add(m);
+			}
+		}
+		for (Player p : players) {
+			if (p.inRange(nx, ny, range)) {
+				mobs.add(p);
+			}
+		}
+		return mobs;
+	}
+
 	public boolean isVacantTile(int x, int y) {
 		if (!MapData.inBounds(x, y)) {
 			return false;
@@ -318,7 +353,7 @@ public class Map {
 				return false;
 			}
 		}
-		if(t.wall[4]) {
+		if (t.wall[4]) {
 			return false;
 		}
 		return true;
@@ -410,8 +445,8 @@ public class Map {
 		do {
 			nx = BearTool.rndInt(x - range, x + range);
 			ny = BearTool.rndInt(y - range, y + range);
-			//nx = BearTool.rndInt(0, 35);
-			//ny = BearTool.rndInt(0, 35);
+			// nx = BearTool.rndInt(0, 35);
+			// ny = BearTool.rndInt(0, 35);
 			tries++;
 		} while (!MapData.inBounds(nx, ny) && (!isVacantTile(nx, ny) || !isVacantElse(nx, ny)) && tries < 1000);
 		if (tries < 1000) {

@@ -12,7 +12,6 @@ import com.bg.ody.shared.PMap;
 import com.bg.ody.shared.PTile;
 import com.bg.ody.shared.Shared;
 import com.bg.ody.shared.Tile;
-import com.kotcrab.vis.ui.widget.color.ColorPicker;
 
 public class RenderEditMapScene extends Scene {
 
@@ -392,10 +391,10 @@ public class RenderEditMapScene extends Scene {
 			dx = ((curWallMod) % 16) * 32 + 559;
 			dy = ((curWallMod) / 16) * 32 + 40 + (9 * 32);
 			draw(Assets.textures.get("sel"), dx, dy, 0, 0, 32, 32);
-			if(wallShadow) {
-				draw(Assets.textures.get("sel"), 559, 40+160, 0, 0, 32, 32);
+			if (wallShadow) {
+				draw(Assets.textures.get("sel"), 559, 40 + 160, 0, 0, 32, 32);
 			} else {
-				draw(Assets.textures.get("sel"), 559, 40+160+32, 0, 0, 32, 32);
+				draw(Assets.textures.get("sel"), 559, 40 + 160 + 32, 0, 0, 32, 32);
 			}
 		} else if (editMode == 8) {
 			Texture t = Assets.textures.get("shadow");
@@ -655,10 +654,11 @@ public class RenderEditMapScene extends Scene {
 				if (t != null && p != null) {
 					for (int i = 0; i < 5; i++) {
 						if (i < 4 && (t.wall[i] || p.wall[i])) {
-							if(t.cast[i] || p.cast[i]) {
+							if (t.cast[i] || p.cast[i]) {
 								draw(w, x * 32 + 20, y * 32 + 40, i * 32, 32, 32, 32);
 							} else {
-							draw(w, x * 32 + 20, y * 32 + 40, i * 32, 0, 32, 32);}
+								draw(w, x * 32 + 20, y * 32 + 40, i * 32, 0, 32, 32);
+							}
 						}
 					}
 				}

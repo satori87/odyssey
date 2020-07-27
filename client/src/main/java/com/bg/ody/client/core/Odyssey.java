@@ -6,7 +6,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
 import com.badlogic.gdx.graphics.Color;
 import com.bg.bearplane.engine.BearTool;
 import com.bg.bearplane.engine.Bearable;
@@ -34,7 +33,6 @@ import com.bg.ody.shared.Shared;
 import com.bg.ody.shared.MapData;
 import com.bg.ody.shared.MonsterData;
 import com.esotericsoftware.kryo.util.IntMap;
-import com.kotcrab.vis.ui.VisUI;
 import com.bg.ody.shared.Registrar.AdminCommand;
 import com.bg.ody.shared.Registrar.CharacterCreated;
 import com.bg.ody.shared.Registrar.Chunk;
@@ -169,8 +167,8 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 	}
 
 	public void godCommand(String gc) {
+		String rest = "";
 		try {
-			String rest = "";
 			if (gc.length() > 1) {
 				rest = gc.substring(gc.indexOf(" ") + 1);
 				if (gc != null && gc.length() > 0) {
@@ -202,7 +200,7 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 				}
 			}
 		} catch (Exception e) {
-
+			Log.debug(rest);
 		}
 	}
 

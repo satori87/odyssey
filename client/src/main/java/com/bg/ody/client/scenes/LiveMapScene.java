@@ -11,7 +11,6 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.bg.bearplane.engine.DrawTask;
 import com.bg.bearplane.engine.Effect;
-import com.bg.bearplane.engine.Log;
 import com.bg.bearplane.gui.Scene;
 import com.bg.bearplane.gui.TextBox;
 import com.bg.ody.client.core.Sprite;
@@ -66,7 +65,7 @@ public class LiveMapScene extends Scene {
 		my = (input.mouseY / 32) + (int) (cam.position.y / 32) - Shared.GAME_HEIGHT / 64;
 		mmx = (int) (input.mouseX + cam.position.x - Shared.GAME_WIDTH / 2);
 		mmy = (int) (input.mouseY + cam.position.y - Shared.GAME_HEIGHT / 2);
-		
+
 		Odyssey.game.curChatText = text.text;
 		checkKeys();
 		if (this instanceof PlayScene) {
@@ -173,9 +172,10 @@ public class LiveMapScene extends Scene {
 		if (ncy > by) {
 			// ncy = by;
 		}
-		
+
 		drawMap();
-		drawChat();moveCameraTo(ncx, ncy);
+		drawChat();
+		moveCameraTo(ncx, ncy);
 	}
 
 	public void drawChat() {
@@ -248,11 +248,9 @@ public class LiveMapScene extends Scene {
 		drawRegion(region, 0, 0, false, 0, 1);
 		Realm.realm.render();
 		Realm.renderFX(3);
-		
+
 		processTextLayer();
-		
-		
-	
+
 	}
 
 	void preprocessMap() {

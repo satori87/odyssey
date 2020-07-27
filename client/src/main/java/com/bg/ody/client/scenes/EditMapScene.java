@@ -20,8 +20,6 @@ import com.bg.ody.shared.PMap;
 import com.bg.ody.shared.PTile;
 import com.bg.ody.shared.Shared;
 import com.bg.ody.shared.Tile;
-import com.kotcrab.vis.ui.widget.color.ColorPicker;
-import com.kotcrab.vis.ui.widget.color.ColorPickerAdapter;
 import com.bg.ody.shared.Registrar.Chunk;
 import com.bg.ody.shared.Registrar.DiscardMap;
 

@@ -7,7 +7,7 @@ public class Log {
 	static String logFile = "log.txt";
 	static int hour = 0;
 
-	public static boolean useFile = true;
+	public static boolean useFile = false;
 
 	public static void hacker(String s) {
 		PrintStream cur = System.out;
