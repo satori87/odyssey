@@ -2,6 +2,7 @@ package com.bg.ody.server;
 
 import com.bg.bearplane.engine.BearTool;
 import com.bg.bearplane.engine.Log;
+import com.bg.ody.shared.Registrar.AttackData;
 
 public class Mobile extends GameConnection {
 
@@ -12,6 +13,9 @@ public class Mobile extends GameConnection {
 	public int dir = 0;
 	public long moveStamp = 0;
 	int moveTime = 0;
+	int attackTime = 0;
+	public long attackStamp = 0;
+
 	boolean warp = false;
 
 	public boolean moved = false;
@@ -55,6 +59,16 @@ public class Mobile extends GameConnection {
 		return distanceTo(target.x, target.y);
 	}
 
+	public boolean canAttack(Mobile m) {
+		boolean can = true;
+		if (m instanceof Monster) {
+			// TODO
+		} else if (m instanceof Player) {
+			// TODO
+		}
+		return can;
+	}
+
 	public boolean adjacentTo(int nx, int ny) {
 		boolean a = false;
 		if (nx == x && (ny == y + 1 || ny == y - 1)) {
@@ -66,12 +80,62 @@ public class Mobile extends GameConnection {
 		return a;
 	}
 
+	public int checkHit(Mobile m) {
+		// returns your score of hitting this target
+		return BearTool.randInt(1, 100);
+	}
+
+	public int checkBlock(Mobile m) {
+		// returns your score of blocking this target
+		return BearTool.randInt(1, 20);
+	}
+
+	public int checkDamage(Mobile m) {
+		// returns your damage against this target
+		return 5 + BearTool.randInt(0, 5);
+	}
+
+	public int checkArmor(Mobile m) {
+		// returns your armor against this target
+		return BearTool.randInt(2, 3);
+	}
+
+	public void attack(Mobile m) {
+
+		if (canAttack(m)) { // then lets check to make sure you can legally attack this target
+
+			if (checkHit(m) > m.checkBlock(this)) {
+
+				int dam = checkDamage(m) - m.checkArmor(this);
+				m.hp -= dam;
+				AttackData ad = new AttackData(uid, (this instanceof Player), m.uid,( m instanceof Player), dam);
+				if (m.hp <= 0) {
+					m.die(this);
+					ad.deathblow = true;
+				}
+
+				// tell everyone else about the attack and its result
+
+				attackStamp = tick + attackTime; // update attack timing and relay timing and attack info to attacker
+			}
+		}
+
+	}
+
+	public void die(Mobile m) {
+		// m killed you
+	}
+
 	public Map map() {
 		return Realm.map[map];
 	}
 
 	public int getMoveTime(boolean run) {
 		return 400;
+	}
+
+	public int getAttackTime() {
+		return 1000;
 	}
 
 	public void sync() {

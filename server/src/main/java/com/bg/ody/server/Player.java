@@ -2,6 +2,8 @@ package com.bg.ody.server;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.List;
+
 import com.bg.ody.shared.Shared;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.Queue;
@@ -14,6 +16,7 @@ import com.bg.ody.shared.Registrar.AdminCommand;
 import com.bg.ody.shared.Registrar.ChangeDirection;
 import com.bg.ody.shared.Registrar.ChangeDoor;
 import com.bg.ody.shared.Registrar.Chunk;
+import com.bg.ody.shared.Registrar.ClientAction;
 import com.bg.ody.shared.Registrar.DiscardMap;
 import com.bg.ody.shared.Registrar.Exit;
 import com.bg.ody.shared.Registrar.JoinGame;
@@ -101,10 +104,46 @@ public class Player extends Mobile {
 		}
 	}
 
+	public void reqAttack() {
+		if (tick > attackStamp) {// lets check if youre within attack time
+			int nx = x;
+			int ny = 0;
+			switch (dir) {
+			case 0:
+				ny--;
+				break;
+			case 1:
+				ny++;
+				break;
+			case 2:
+				nx--;
+				break;
+			case 3:
+				nx++;
+				break;
+			}
+			List<Mobile> at = map().getMobsNear(nx, ny, 0);
+			if (at.size() > 0) { // then lets check to make sure theres a valid target there
+				attack(at.get(0));
+			} else {
+				// nothing there to attack! this is where maybe attacking walls can go
+			}
+		} else {
+			// log how many times this happens and report unusually high amounts
+		}
+	}
+
 	public void processPacket(Object data) {
 		if (data instanceof Move) {
 			Move m = (Move) data;
 			move(m.dir, m.run);
+		} else if (data instanceof ClientAction) {
+			ClientAction ca = (ClientAction) data;
+			switch (ca.act) {
+			case 1: // attack
+				reqAttack();
+				break;
+			}
 		} else if (data instanceof PingPacket) {
 			PingPacket pp = (PingPacket) data;
 			sendTCP(pp);
@@ -364,6 +403,10 @@ public class Player extends Mobile {
 
 	public int getMoveTime(boolean run) {
 		return run ? 200 : 400;
+	}
+
+	public int getAttackTime() {
+		return 1000;
 	}
 
 	public void disconnect(String s) {

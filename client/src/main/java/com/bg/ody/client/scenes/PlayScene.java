@@ -4,6 +4,7 @@ import com.badlogic.gdx.Input.Keys;
 import com.bg.bearplane.gui.Scene;
 import com.bg.ody.client.core.Odyssey;
 import com.bg.ody.shared.Registrar.ChangeDirection;
+import com.bg.ody.shared.Registrar.ClientAction;
 
 public class PlayScene extends LiveMapScene {
 
@@ -55,6 +56,12 @@ public class PlayScene extends LiveMapScene {
 				ChangeDirection cd = new ChangeDirection();
 				cd.d = character.dir;
 				Odyssey.game.sendTCP(cd);
+			}
+		}
+		if (input.keyDown[Keys.CONTROL_LEFT] || input.keyDown[Keys.CONTROL_RIGHT]) {
+			if (tick > character.attackTimer) {
+				ClientAction ca = new ClientAction(1);
+				Odyssey.game.sendTCP(ca);
 			}
 		}
 	}

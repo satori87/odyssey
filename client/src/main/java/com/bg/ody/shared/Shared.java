@@ -4,7 +4,6 @@ public class Shared {
 
 	public static String TITLE_STRING = "Odyssey: Dreams of Yore";
 
-	public static final int PORT = 4000;
 	public static final int MAX_LOGIN_ATTEMPTS = 4;
 	public static final int MAX_USERS = 100;
 	public static final int TCP_PORT = 2597;
@@ -32,24 +31,12 @@ public class Shared {
 
 	public static final String GAME_NAME = "Odyssey";
 
-	public static final boolean ALLOW_MULTI = true;
-
-	public static final int MAX_MONSTERS = 50;
-
-	public static final boolean PROCESS_IDLE_MAPS = true;
 
 	// public static final String SERVER_IP = "server.bearable.games";
 	public static final String SERVER_IP = "127.0.0.1";
 	public static final String CLIENT_VERSION = "bananas17";
 
-	public static final String MYSQL_ADDRESS = "patch.bearable.games";
 
-	public static final int MYSQL_PORT = 3306;
-	public static final String MYSQL_DB = "odyssey";
-	public static final String MYSQL_USER = "bear";
-	// public static final String MYSQL_USER = "bb"; //this is the CORRECT ONE TO
-	// USE down the road
-	public static final String MYSQL_PASS = "%Pb?fYW@ydP9RLqeTnfSW-u!23c$f=%#";
 
 	public static final String PUBLIC_WEBSITE = "http://bearable.games";
 

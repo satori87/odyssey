@@ -307,6 +307,10 @@ public class Monster extends Mobile {
 	public int getMoveTime(boolean run) {
 		return data().walkSpeed;
 	}
+	
+	public int getAttackTime() {
+		return data().attackSpeed;
+	}
 
 	public MonsterData data() {
 		try {

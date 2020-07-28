@@ -31,7 +31,7 @@ public class Map {
 	public MapOptions options = new MapOptions();
 	byte[] data = null;
 
-	public Monster[] monsters = new Monster[Shared.MAX_MONSTERS];
+	public Monster[] monsters = new Monster[Game.MAX_MONSTERS];
 	public ArrayList<Spawner> spawners = new ArrayList<Spawner>();
 	public ArrayList<Player> players = new ArrayList<Player>();
 	public Door[] doors = new Door[100];
@@ -73,7 +73,7 @@ public class Map {
 	}
 
 	public int getFreeMonster() {
-		for (int i = 0; i < Shared.MAX_MONSTERS; i++) {
+		for (int i = 0; i < Game.MAX_MONSTERS; i++) {
 			if (monsters[i] == null) {
 				return i;
 			}
@@ -82,7 +82,7 @@ public class Map {
 	}
 
 	public void reset() {
-		for (int i = 0; i < Shared.MAX_MONSTERS; i++) {
+		for (int i = 0; i < Game.MAX_MONSTERS; i++) {
 			monsters[i] = null;
 		}
 		for (int i = 0; i < 100; i++) {
@@ -187,7 +187,7 @@ public class Map {
 	}
 
 	public void update(long tick) {
-		if (players.size() > 0 || tick - lastHadPlayerAt < 10000 || Shared.PROCESS_IDLE_MAPS) {
+		if (players.size() > 0 || tick - lastHadPlayerAt < 10000 || Game.PROCESS_IDLE_MAPS) {
 			this.tick = tick;
 			Monster m;
 			for (Spawner sp : spawners) {
@@ -198,7 +198,7 @@ public class Map {
 					d.update(tick);
 				}
 			}
-			for (int i = 0; i < Shared.MAX_MONSTERS; i++) {
+			for (int i = 0; i < Game.MAX_MONSTERS; i++) {
 				m = monsters[i];
 				if (m != null && m.dead) {
 					if (tick > m.diedAt + 10000) {

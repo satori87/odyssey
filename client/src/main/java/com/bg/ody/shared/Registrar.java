@@ -91,6 +91,10 @@ public class Registrar implements NetworkRegistrar {
 
 	public static class ClientAction {
 		public int act;
+
+		public ClientAction(int a) {
+			act = a;
+		}
 	}
 
 	public static class NewCharacter {
@@ -144,8 +148,27 @@ public class Registrar implements NetworkRegistrar {
 		public int id = 0;
 		public int reqState = 0;
 	}
-	
+
 	// TCP Server to Client
+
+	public static class AttackData {
+		public int attacker = 0;
+		public boolean playerAttacker = false;
+		public int defender = 0;
+		public boolean playerDefender = false;
+
+		public int dam = 0;
+
+		public boolean deathblow = false;
+
+		public AttackData(int attacker, boolean playerAttacker, int defender, boolean playerDefender, int dam) {
+			this.attacker = attacker;
+			this.playerAttacker = playerAttacker;
+			this.defender = defender;
+			this.playerDefender = playerDefender;
+			this.dam = dam;
+		}
+	}
 
 	public static class DoorSync {
 		public int id = 0;

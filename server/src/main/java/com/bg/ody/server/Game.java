@@ -22,6 +22,21 @@ import com.bg.ody.shared.Registrar.Play;
 
 public class Game {
 
+	
+	public static final boolean ALLOW_MULTI = true;
+
+	public static final int MAX_MONSTERS = 50;
+
+	public static final boolean PROCESS_IDLE_MAPS = true;
+
+	public static final String MYSQL_ADDRESS = "patch.bearable.games";
+
+	public static final int MYSQL_PORT = 3306;
+	public static final String MYSQL_DB = "odyssey";
+	public static final String MYSQL_USER = "bear";
+	public static final String MYSQL_PASS = "%Pb?fYW@ydP9RLqeTnfSW-u!23c$f=%#";
+	
+	
 	public static Game game;
 
 	GameServer gameServer;
@@ -42,8 +57,8 @@ public class Game {
 	}
 
 	public void start() {
-		MySQL.connectSQL(Shared.MYSQL_ADDRESS, Shared.MYSQL_PORT, Shared.MYSQL_DB, Shared.MYSQL_USER,
-				Shared.MYSQL_PASS);
+		MySQL.connectSQL(Game.MYSQL_ADDRESS, Game.MYSQL_PORT, Game.MYSQL_DB, Game.MYSQL_USER,
+				Game.MYSQL_PASS);
 		Log.info("Connected to mySQL.");
 		world = new Realm(this);
 		Realm.load();

@@ -23,6 +23,9 @@ public class Sprite {
 	public long moveStamp = 0;
 	public long moveTimer = 0;
 	public int moveTime = 500;
+	public long attackStamp = 0;
+	public long attackTimer = 0;
+	public int attackTime = 1000;
 	public int moveDir = 0;
 	public int walkStep = 0;
 	public long delay = 0;
