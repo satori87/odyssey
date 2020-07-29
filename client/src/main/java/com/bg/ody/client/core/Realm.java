@@ -11,12 +11,14 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.g2d.ParticleEffectPool;
 import com.badlogic.gdx.utils.IntMap;
 import com.bg.bearplane.engine.Effect;
 import com.bg.bearplane.engine.Log;
 import com.bg.bearplane.gui.Scene;
+import com.bg.ody.shared.ItemData;
 import com.bg.ody.shared.MapData;
 import com.bg.ody.shared.MonsterData;
 import com.bg.ody.shared.PMap;
@@ -30,9 +32,9 @@ import com.esotericsoftware.kryo.io.Output;
 public class Realm {
 
 	public static Realm realm;
-	
+
 	static LightManager lightMan;
-	
+
 	long tick = 0;
 
 	public static int curMap = 0;
@@ -41,6 +43,7 @@ public class Realm {
 	public static PMap[] pmap = new PMap[Shared.NUM_MAPS];
 	public static MapData[] mapData = new MapData[Shared.NUM_MAPS];
 	public static MonsterData[] monsterData = new MonsterData[Shared.NUM_MONSTERS];
+	public static ItemData[] itemData = new ItemData[Shared.NUM_ITEMS];
 	public static IntMap<ParticleEffect> effectData = new IntMap<ParticleEffect>();
 	public static IntMap<ParticleEffectPool> effectPool = new IntMap<ParticleEffectPool>();
 
@@ -49,11 +52,15 @@ public class Realm {
 	public static IntMap<Monster> monsters = new IntMap<Monster>();
 	public static IntMap<Door> doors = new IntMap<Door>();
 	public static List<Effect> effects = new ArrayList<Effect>();
+	public static List<Floater> floaters = new ArrayList<Floater>();
 
 	public Realm() {
 		Shared.populateEdges();
 		for (int i = 0; i < Shared.NUM_MONSTERS; i++) {
 			monsterData[i] = new MonsterData(i);
+		}
+		for (int i = 0; i < Shared.NUM_ITEMS; i++) {
+			itemData[i] = new ItemData(i);
 		}
 		realm = this;
 
@@ -70,10 +77,15 @@ public class Realm {
 		}
 	}
 
+	public static void addFloater(Sprite e, int x, int y, String text, Color col, long aliveAt) {
+		Floater f = new Floater(e, x, y, text, col, aliveAt);
+		floaters.add(f);
+	}
+
 	public void update(long tick) {
 		this.tick = tick;
-		if(lightMan != null) {
-		lightMan.update(tick);
+		if (lightMan != null) {
+			lightMan.update(tick);
 		}
 		Effect fx = null;
 		Iterator<Effect> itr = effects.iterator();
@@ -85,6 +97,17 @@ public class Realm {
 		}
 		for (Door d : doors.values()) {
 			d.update(tick);
+		}
+		List<Floater> drops = new ArrayList<Floater>();
+		for (Floater f : floaters) {
+			if (f.active) {
+				f.update(tick);
+			} else {
+				drops.add(f);
+			}
+		}
+		for (Floater f : drops) {
+			floaters.remove(f);
 		}
 		while (itr.hasNext()) {
 			fx = itr.next();
@@ -99,7 +122,10 @@ public class Realm {
 	}
 
 	public void render() {
-	lightMan.render();
+		lightMan.render();
+		for (Floater f : floaters) {
+			f.render(tick);
+		}
 	}
 
 	public static MapData map() {
@@ -214,8 +240,8 @@ public class Realm {
 	}
 
 	public void load() {
-		lightMan = new LightManager();		
-		//lightMan.createLight(32, 64, 0.5f, true, true, 1.2f, lBody)
+		lightMan = new LightManager();
+		// lightMan.createLight(32, 64, 0.5f, true, true, 1.2f, lBody)
 	}
 
 	public static MapData getNeighbor(int m, int d) {
@@ -264,14 +290,14 @@ public class Realm {
 			}
 			for (Sprite c : players.values()) {
 				if (c.map == curMap) {
-					if (c.x == x && c.y == y) {
+					if (c.x == x && c.y == y && !c.dead) {
 						return false;
 					}
 				}
 			}
 			for (Monster c : monsters.values()) {
 				if (c.map == curMap) {
-					if (c.x == x && c.y == y) {
+					if (c.x == x && c.y == y && !c.dead) {
 						return false;
 					}
 				}

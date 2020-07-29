@@ -12,6 +12,7 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 import com.bg.bearplane.engine.BearTool;
 import com.bg.bearplane.engine.MySQL;
+import com.bg.ody.shared.ItemData;
 import com.bg.ody.shared.MapData;
 import com.bg.ody.shared.MonsterData;
 import com.bg.ody.shared.PMap;
@@ -25,6 +26,7 @@ public class Realm {
 	Game game;
 
 	public static MonsterData[] monsterData = new MonsterData[Shared.NUM_MONSTERS];
+	public static ItemData[] itemData = new ItemData[Shared.NUM_ITEMS];
 
 	public static Map[] map = new Map[Shared.NUM_MAPS];
 	public static Realm world;
@@ -35,6 +37,9 @@ public class Realm {
 		this.game = game;
 		for (int i = 0; i < Shared.NUM_MONSTERS; i++) {
 			monsterData[i] = new MonsterData(i);
+		}
+		for (int i = 0; i < Shared.NUM_ITEMS; i++) {
+			itemData[i] = new ItemData(i);
 		}
 		for (int i = 0; i < Shared.NUM_MAPS; i++) {
 			map[i] = new Map(game, i);
@@ -80,6 +85,7 @@ public class Realm {
 		Shared.populateEdges();
 		loadMaps();
 		loadMonsters();
+		loadItems();
 	}
 
 	public static boolean monsterExists(int mon) {
@@ -96,24 +102,63 @@ public class Realm {
 		return found;
 	}
 
+	public static boolean itemExists(int item) {
+		boolean found = false;
+		String statement = "SELECT * FROM items WHERE id=" + item;
+		ResultSet rs = MySQL.get(statement);
+		try {
+			while (rs.next()) {
+				found = true;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return found;
+	}
+
 	public static void saveMonster(int mon) {
 		if (!monsterExists(mon)) {
 			MySQL.save("INSERT INTO monsters (id) VALUES (" + mon + ")");
 		}
-		String statement = "UPDATE monsters SET data=? WHERE id=?";
+		String statement = "UPDATE monsters SET name=?,data=? WHERE id=?";
 		LinkedList<Object> obj = new LinkedList<Object>();
+		obj.add(monsterData[mon].name);
 		obj.add(BearTool.serialize(monsterData[mon]));
 		obj.add(mon);
 		MySQL.save(statement, obj);
 	}
 
+	public static void saveItem(int item) {
+		if (!itemExists(item)) {
+			MySQL.save("INSERT INTO items (id) VALUES (" + item + ")");
+		}
+		String statement = "UPDATE items SET name=?,data=? WHERE id=?";
+		LinkedList<Object> obj = new LinkedList<Object>();
+		obj.add(itemData[item].name);
+		obj.add(BearTool.serialize(itemData[item]));
+		obj.add(item);
+		MySQL.save(statement, obj);
+	}
+
+	public static void loadItems() {
+		try {
+			ResultSet rs;
+			rs = MySQL.get("SELECT id,data FROM items");
+			while (rs.next()) {
+				itemData[rs.getInt(1)] = (ItemData) BearTool.deserialize((byte[]) rs.getObject(2), ItemData.class);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	public static void loadMonsters() {
 		try {
 			ResultSet rs;
-			//MonsterData md;
 			rs = MySQL.get("SELECT id,data FROM monsters");
 			while (rs.next()) {
-				monsterData[rs.getInt(1)] = (MonsterData) BearTool.deserialize((byte[])rs.getObject(2), MonsterData.class);
+				monsterData[rs.getInt(1)] = (MonsterData) BearTool.deserialize((byte[]) rs.getObject(2),
+						MonsterData.class);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -164,7 +164,7 @@ public class FlatTiledGraph implements TiledGraph<FlatTiledNode> {
 				n.connections.get(d).valid = true;
 				n.connections.get(d).cost = 1f;
 			} else {
-				n.connections.get(d).valid = false;
+				n.connections.get(d).valid = true;
 				n.connections.get(d).cost = 200f;
 			}
 		} else {

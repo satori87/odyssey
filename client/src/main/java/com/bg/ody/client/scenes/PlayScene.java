@@ -1,17 +1,18 @@
 package com.bg.ody.client.scenes;
 
 import com.badlogic.gdx.Input.Keys;
+import com.bg.bearplane.engine.Log;
 import com.bg.bearplane.gui.Scene;
 import com.bg.ody.client.core.Odyssey;
 import com.bg.ody.shared.Registrar.ChangeDirection;
-import com.bg.ody.shared.Registrar.ClientAction;
+import com.bg.ody.shared.Registrar.ReqAttack;
 
 public class PlayScene extends LiveMapScene {
 
 	void checkKeys() {
 		super.checkKeys();
 		int od = character.dir;
-		if (tick > character.moveTimer) {
+		if (!character.dead && tick > character.moveTimer) {
 			if (input.keyDown[Keys.UP]) {
 				character.dir = 0;
 			} else if (input.keyDown[Keys.DOWN]) {
@@ -27,12 +28,15 @@ public class PlayScene extends LiveMapScene {
 			case Keys.F4:
 				Odyssey.game.adminCommand(1);
 				break;
+			case Keys.F5:
+				Odyssey.game.adminCommand(3);
+				break;
 			case Keys.F6:
 				Odyssey.game.adminCommand(2);
 				break;
 			}
 		}
-		if (tick > character.moveTimer) {
+		if (!character.dead && tick > character.moveTimer) {
 			if (input.keyDown[Keys.UP]) {
 				if (tick - input.keyDownAt[Keys.UP] > 20) {
 					character.move(0);
@@ -52,15 +56,17 @@ public class PlayScene extends LiveMapScene {
 			}
 		}
 		if (tick > character.moveTimer) { // we didnt send a move packet
-			if (od != character.dir) {
+			if (!character.dead && od != character.dir) {
 				ChangeDirection cd = new ChangeDirection();
 				cd.d = character.dir;
 				Odyssey.game.sendTCP(cd);
 			}
 		}
 		if (input.keyDown[Keys.CONTROL_LEFT] || input.keyDown[Keys.CONTROL_RIGHT]) {
-			if (tick > character.attackTimer) {
-				ClientAction ca = new ClientAction(1);
+			if (!character.dead && tick > character.attackStamp) {
+				character.attackStamp = tick + (int) ((float) Odyssey.game.getMe().attackTime * 1.1f);
+				ReqAttack ca = new ReqAttack();
+				Odyssey.game.getMe().lastReqAttackAt = tick;
 				Odyssey.game.sendTCP(ca);
 			}
 		}

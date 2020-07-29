@@ -17,6 +17,7 @@ public class Shared {
 	public static final int NUM_MAPS = 100;
 
 	public static final int NUM_MONSTERS = 300;
+	public static final int NUM_ITEMS = 1000;
 
 	public static final int CHAT_SIZE = 400;
 
@@ -31,12 +32,15 @@ public class Shared {
 
 	public static final String GAME_NAME = "Odyssey";
 
+	public static final String SERVER_IP = "server.bearable.games";
+	public static final String DEV_IP = "dev.bearable.games";
 
-	// public static final String SERVER_IP = "server.bearable.games";
-	public static final String SERVER_IP = "127.0.0.1";
+	// public static final String SERVER_IP = "127.0.0.1";
 	public static final String CLIENT_VERSION = "bananas17";
 
-
+	public static final int SPAWN_MAP = 1;
+	public static final int SPAWN_X = 5;
+	public static final int SPAWN_Y = 10;
 
 	public static final String PUBLIC_WEBSITE = "http://bearable.games";
 

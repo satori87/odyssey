@@ -9,6 +9,7 @@ import com.bg.bearplane.ai.TiledManhattanDistance;
 import com.bg.bearplane.ai.TiledSmoothableGraphPath;
 import com.bg.bearplane.engine.BearTool;
 import com.bg.bearplane.engine.Coord;
+import com.bg.bearplane.engine.Log;
 import com.bg.ody.shared.MapData;
 import com.bg.ody.shared.MapOptions;
 import com.bg.ody.shared.PMap;
@@ -158,11 +159,10 @@ public class Map {
 
 	public void join(Player p) {
 		// tell player everything thats on map
-
 		JoinMap jm = new JoinMap();
 		for (Player other : players) {
 			if (other.playing() && p != other && p.map == other.map) {
-				jm.players.add(new PlayerSync(p.uid, p.map, p.x, p.y, 0, p.dir, false));
+				jm.players.add(new PlayerSync(other.uid, other.map, other.x, other.y, 0, other.dir, false));
 			}
 		}
 		players.add(p);
@@ -309,7 +309,7 @@ public class Map {
 	List<Player> getPlayersNear(int nx, int ny, int range) {
 		List<Player> mobs = new ArrayList<Player>();
 		for (Player p : players) {
-			if (p.inRange(nx, ny, range)) {
+			if (p.playing() && !p.dead && p.inRange(nx, ny, range)) {
 				mobs.add(p);
 			}
 		}
@@ -329,12 +329,12 @@ public class Map {
 	List<Mobile> getMobsNear(int nx, int ny, int range) {
 		List<Mobile> mobs = new ArrayList<Mobile>();
 		for (Monster m : monsters) {
-			if (m.inRange(nx, ny, range) && !m.dead) {
+			if (m != null && m.inRange(nx, ny, range) && !m.dead) {
 				mobs.add(m);
 			}
 		}
 		for (Player p : players) {
-			if (p.inRange(nx, ny, range)) {
+			if (p.playing() && !p.dead && p.inRange(nx, ny, range)) {
 				mobs.add(p);
 			}
 		}

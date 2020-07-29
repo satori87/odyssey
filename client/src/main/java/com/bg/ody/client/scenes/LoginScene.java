@@ -2,6 +2,7 @@ package com.bg.ody.client.scenes;
 
 import com.badlogic.gdx.graphics.Color;
 import com.bg.bearplane.gui.Button;
+import com.bg.bearplane.gui.CheckBox;
 import com.bg.bearplane.gui.Frame;
 import com.bg.bearplane.gui.Label;
 import com.bg.bearplane.gui.Scene;
@@ -19,6 +20,8 @@ public class LoginScene extends Scene {
 
 	public static boolean newAcct = false;
 
+	CheckBox dev;
+
 	public void start() {
 		super.start();
 		int centerX = Shared.GAME_WIDTH / 2;
@@ -34,9 +37,13 @@ public class LoginScene extends Scene {
 		pass.allowSpecial = true;
 		textBoxes.add(pass);
 		pass.max = Shared.MAX_PASS_LEN;
-pass.password = true;
+		pass.password = true;
 		buttons.add(new Button(this, 0, centerX, centerY + 128, 224, 48, "Connect"));
 		buttons.add(new Button(this, 1, centerX, centerY + 128 + 64, 224, 48, "Back"));
+
+		dev = new CheckBox(this, 2, centerX-30, centerY + 87, "Dev Server");
+		dev.toggled = false;
+		checkBoxes.add(dev);
 
 	}
 
@@ -78,7 +85,7 @@ pass.password = true;
 		String pass = textBoxes.get(1).text;
 		if (Shared.validUser(user) && Shared.validPass(pass)) {
 			lock();
-			Odyssey.game.connectGame(Shared.SERVER_IP);
+			Odyssey.game.connectGame((dev.toggled ? Shared.DEV_IP : Shared.SERVER_IP));
 		} else {
 			msgBox("Username must be between " + Shared.MIN_NAME_LEN + " and " + Shared.MAX_NAME_LEN
 					+ " alphanumeric characters. Passwords must be between " + Shared.MIN_PASS_LEN + " and "

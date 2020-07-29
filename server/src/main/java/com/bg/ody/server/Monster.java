@@ -66,6 +66,7 @@ public class Monster extends Mobile {
 		} else {
 			ms.diff = 0;
 		}
+		ms.dead = dead;
 		return ms;
 	}
 
@@ -105,6 +106,7 @@ public class Monster extends Mobile {
 		pathing = false;
 		target = null;
 		recalc = false;
+		wander();
 	}
 
 	void wander() {
@@ -131,10 +133,12 @@ public class Monster extends Mobile {
 			Player cp = null;
 			int d = 0;
 			for (Player p : nearby) {
-				d = (int) distanceTo(p);
-				if (d < closest) {
-					closest = d;
-					cp = p;
+				if (!p.dead) {
+					d = (int) distanceTo(p);
+					if (d < closest) {
+						closest = d;
+						cp = p;
+					}
 				}
 			}
 			if (cp != null) {
@@ -155,7 +159,7 @@ public class Monster extends Mobile {
 		boolean stillValid = false;
 		if (target != null) {
 			// target is not null
-			if (target.playing()) {
+			if (target.playing() && !target.dead) {
 				// target is playing
 				if (map().id == target.map().id) {
 					// we are on same map
@@ -220,6 +224,34 @@ public class Monster extends Mobile {
 		}
 	}
 
+	boolean attacked = false;
+
+	void checkAttack() {
+		if (tick > moveStamp || tick > moveStamp - moveTime / 2) {
+			if (target != null && !attacked && tick > attackStamp) {
+				if (adjacentTo(target.x, target.y)) {
+					// attack!!!
+					attack(target);
+					attacked = true;
+					attackTime = getAttackTime();
+					attackStamp = tick + attackTime;
+				} else {
+					List<Player> nearby = map().getPlayersNear(x, y, 1);
+					for (Player p : nearby) {
+						if (adjacentTo(p.x, p.y)) {
+							if (!attacked && canAttack(p)) {
+								attacked = true;
+								attack(p);
+								attackTime = getAttackTime();
+								attackStamp = tick + attackTime;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
 	public void update(long tick) {
 		this.tick = tick;
 		if (tick > targetStamp) {
@@ -266,8 +298,11 @@ public class Monster extends Mobile {
 				calculatePath();
 			}
 			if (tick > moveStamp) {
-				if (!adjacentTo(target.x, target.y) || (BearTool.randInt(1, 100) < 5 && tick > strafeStamp)) {
-					strafeStamp = tick + 1000;
+				attacked = false;
+				checkAttack();
+				if (target != null && !adjacentTo(target.x, target.y)
+						|| (BearTool.randInt(1, 100) < 5 && tick > strafeStamp)) {
+					strafeStamp = tick + 2000;
 					if (path.getCount() > 0) {
 						FlatTiledNode t = path.get(0);
 						int d = 4;
@@ -287,6 +322,7 @@ public class Monster extends Mobile {
 
 						if (moved) {
 							path.pop();
+							// checkAttack();
 						} else {
 							if (target == null) {
 								wander();
@@ -307,7 +343,7 @@ public class Monster extends Mobile {
 	public int getMoveTime(boolean run) {
 		return data().walkSpeed;
 	}
-	
+
 	public int getAttackTime() {
 		return data().attackSpeed;
 	}

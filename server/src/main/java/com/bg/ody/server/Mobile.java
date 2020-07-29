@@ -13,17 +13,16 @@ public class Mobile extends GameConnection {
 	public int dir = 0;
 	public long moveStamp = 0;
 	int moveTime = 0;
+	public long lastMoveAt = 0;
 	int attackTime = 0;
 	public long attackStamp = 0;
+	public long lastAttackAt = 0;
 
 	boolean warp = false;
 
 	public boolean moved = false;
-
 	public boolean dead = false;
 	public long diedAt = 0;
-
-	public long lastMoveAt = 0;
 
 	long tick = 0;
 
@@ -102,28 +101,41 @@ public class Mobile extends GameConnection {
 
 	public void attack(Mobile m) {
 
-		if (canAttack(m)) { // then lets check to make sure you can legally attack this target
+		dir = BearTool.getDir(x, y, m.x, m.y);
+
+		if (canAttack(m)) {
 
 			if (checkHit(m) > m.checkBlock(this)) {
 
 				int dam = checkDamage(m) - m.checkArmor(this);
 				m.hp -= dam;
-				AttackData ad = new AttackData(uid, (this instanceof Player), m.uid,( m instanceof Player), dam);
+
+				AttackData ad = new AttackData(map, uid, (this instanceof Player), m.uid, (m instanceof Player), dam,
+						attackTime, dir);
 				if (m.hp <= 0) {
 					m.die(this);
 					ad.deathblow = true;
 				}
 
-				// tell everyone else about the attack and its result
-
-				attackStamp = tick + attackTime; // update attack timing and relay timing and attack info to attacker
+				map().send(ad);
+			} else { // miss
+				AttackData ad = new AttackData(map, uid, (this instanceof Player), m.uid, (m instanceof Player), -1,
+						attackTime, dir);
+				map().send(ad);
 			}
+		} else {
+			attackTime = getAttackTime();
+			AttackData ad = new AttackData(map, uid, (this instanceof Player), m.uid, (m instanceof Player), -2,
+					attackTime, dir);
+			map().send(ad);
 		}
 
 	}
 
 	public void die(Mobile m) {
 		// m killed you
+		dead = true;
+		diedAt = tick;
 	}
 
 	public Map map() {

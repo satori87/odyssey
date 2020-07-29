@@ -9,8 +9,10 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
+import com.bg.bearplane.engine.BearTool;
 import com.bg.bearplane.engine.DrawTask;
 import com.bg.bearplane.engine.Effect;
+import com.bg.bearplane.engine.Log;
 import com.bg.bearplane.gui.Scene;
 import com.bg.bearplane.gui.TextBox;
 import com.bg.ody.client.core.Sprite;
@@ -137,6 +139,7 @@ public class LiveMapScene extends Scene {
 	}
 
 	public void render() {
+		Scene.batcher.setColor(1, 1, 1, 1);
 		super.render();
 		int cx = character.trueX();
 		int cy = character.trueY() + 16;
@@ -196,6 +199,7 @@ public class LiveMapScene extends Scene {
 	void drawMapLayer(int i) {
 		for (DrawTask d : drawList) {
 			if (d.i == i) {
+				Scene.batcher.setColor(d.col);
 				if (d.type == 0) {
 					drawTile(d.set, d.num, d.x, d.y);
 				} else if (d.type == 1) {
@@ -205,7 +209,9 @@ public class LiveMapScene extends Scene {
 				} else if (d.type == 4) {
 					Realm.effects.get(d.f).fx.draw(Scene.batcher);
 				}
+				Scene.batcher.setColor(Color.WHITE);
 			}
+
 		}
 	}
 
@@ -311,15 +317,39 @@ public class LiveMapScene extends Scene {
 
 	void processTextLayer() {
 		String s = "";
+		Color col = Color.WHITE;
+		float a = 0;
 		if (this instanceof PlayScene) {
 			for (Sprite c : Realm.players.values()) {
 				if (c.map == Realm.curMap) {
-					drawFont(0, c.trueX() + 16, c.trueY() - 8, c.name, true, 1f);
+					if (c.dead) {
+						a = (float) ((c.diedAt + 10000) - tick) / 10000f;
+						a -= .4f;
+						if (a < 0)
+							a = 0;
+						if (a > 1)
+							a = 1;
+						col = new Color(1, 1, 1, a);
+					} else {
+						col = Color.WHITE;
+					}
+					drawFont(0, c.trueX() + 16, c.trueY() - 8, c.name, true, 1f, col);
 				}
 			}
 			for (Monster c : Realm.monsters.values()) {
 				if (c.map == Realm.curMap) {
-					drawFont(0, c.trueX() + 16, c.trueY() - 8, c.name, true, 1f);
+					if (c.dead) {
+						a = (float) ((c.diedAt + 10000) - tick) / 10000f;
+						a -= .4f;
+						if (a < 0)
+							a = 0;
+						if (a > 1)
+							a = 1;
+						col = new Color(1, 1, 1, a);
+					} else {
+						col = Color.WHITE;
+					}
+					drawFont(0, c.trueX() + 16, c.trueY() - 8, c.name, true, 1f, col);
 				}
 			}
 			for (Door c : Realm.doors.values()) {
@@ -335,7 +365,7 @@ public class LiveMapScene extends Scene {
 					} else {
 						s = "Closing";
 					}
-					Color col = Color.RED;
+					col = Color.RED;
 					if (c.inRange(Odyssey.game.getMe().x, Odyssey.game.getMe().y)) {
 						col = Color.WHITE;
 					}
@@ -368,6 +398,7 @@ public class LiveMapScene extends Scene {
 		int mx = 0;
 		int my = 0;
 		int ly = 0;
+		float al = 0;
 		if (this instanceof PlayScene) {
 			for (Effect f : Realm.effects) {
 				if (f.fx != null && f.visible && f.i == 1) {
@@ -380,19 +411,49 @@ public class LiveMapScene extends Scene {
 			}
 			for (Sprite c : Realm.players.values()) {
 				if (c.map == Realm.curMap) {
-					dt = new DrawTask(i, c.set, c.sprite, c.getFrame(), c.trueX(), c.trueY());
-					ly = 32 + c.trueY();
-					if (ly >= 0 && ly < Shared.MAP_WIDTH * 32 + 64) {
-						layerList.get(ly).add(dt);
+					if (c.dead) {
+						dt = new DrawTask(i, 13, c.corpse, c.trueX(), c.trueY());
+						al = (float) ((c.diedAt + 10000) - tick) / 10000f;
+						al += .3f;
+						if (al < 0)
+							al = 0;
+						if (al > 1)
+							al = 1;
+						dt.col = new Color(1, 1, 1, al);
+						ly = -32 + c.trueY();
+						if (ly >= 0 && ly < Shared.MAP_WIDTH * 32 + 64) {
+							layerList.get(ly).add(dt);
+						}
+					} else {
+						dt = new DrawTask(i, c.set, c.sprite, c.getFrame(), c.trueX(), c.trueY());
+						ly = 32 + c.trueY();
+						if (ly >= 0 && ly < Shared.MAP_WIDTH * 32 + 64) {
+							layerList.get(ly).add(dt);
+						}
 					}
 				}
 			}
 			for (Monster c : Realm.monsters.values()) {
 				if (c.map == Realm.curMap) {
-					dt = new DrawTask(i, c.set, c.sprite, c.getFrame(), c.trueX(), c.trueY());
-					ly = 32 + c.trueY();
-					if (ly >= 0 && ly < Shared.MAP_WIDTH * 32 + 64) {
-						layerList.get(ly).add(dt);
+					if (c.dead) {
+						dt = new DrawTask(i, 13, c.corpse, c.trueX(), c.trueY());
+						al = (float) ((c.diedAt + 10000) - tick) / 10000f;
+						al += .3f;
+						if (al < 0)
+							al = 0;
+						if (al > 1)
+							al = 1;
+						dt.col = new Color(1, 1, 1, al);
+						ly = -32 + c.trueY();
+						if (ly >= 0 && ly < Shared.MAP_WIDTH * 32 + 64) {
+							layerList.get(ly).add(dt);
+						}
+					} else {
+						dt = new DrawTask(i, c.set, c.sprite, c.getFrame(), c.trueX(), c.trueY());
+						ly = 32 + c.trueY();
+						if (ly >= 0 && ly < Shared.MAP_WIDTH * 32 + 64) {
+							layerList.get(ly).add(dt);
+						}
 					}
 				}
 			}

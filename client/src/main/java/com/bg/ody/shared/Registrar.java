@@ -14,7 +14,7 @@ public class Registrar implements NetworkRegistrar {
 	// This registers objects that are going to be sent over the network.
 	public void registerClasses(EndPoint endPoint) {
 		Kryo kryo = endPoint.getKryo();
-		kryo.register(ClientAction.class);
+		kryo.register(ReqAttack.class);
 		kryo.register(NewCharacter.class);
 		kryo.register(CharacterCreated.class);
 		kryo.register(Tile.class);
@@ -45,7 +45,12 @@ public class Registrar implements NetworkRegistrar {
 		kryo.register(DiscardMap.class);
 		kryo.register(DoorSync.class);
 		kryo.register(ChangeDoor.class);
-
+		kryo.register(AttackData.class);
+		kryo.register(ItemData.class);
+		kryo.register(ItemData[].class);
+		
+		kryo.register(ItemReceived.class);
+		
 	}
 
 	// TCP Client to Server
@@ -89,11 +94,9 @@ public class Registrar implements NetworkRegistrar {
 		public int l = 0;
 	}
 
-	public static class ClientAction {
-		public int act;
+	public static class ReqAttack {
+		public ReqAttack() {
 
-		public ClientAction(int a) {
-			act = a;
 		}
 	}
 
@@ -161,12 +164,25 @@ public class Registrar implements NetworkRegistrar {
 
 		public boolean deathblow = false;
 
-		public AttackData(int attacker, boolean playerAttacker, int defender, boolean playerDefender, int dam) {
+		public int attackTime = 0;
+
+		public int map = 0;
+
+		public int d = 0;
+		
+		public AttackData() {
+		}
+
+		public AttackData(int map, int attacker, boolean playerAttacker, int defender, boolean playerDefender, int dam,
+				int attackTime, int d) {
+			this.d = d;
+			this.map = map;
 			this.attacker = attacker;
 			this.playerAttacker = playerAttacker;
 			this.defender = defender;
 			this.playerDefender = playerDefender;
 			this.dam = dam;
+			this.attackTime = attackTime;
 		}
 	}
 
@@ -188,6 +204,10 @@ public class Registrar implements NetworkRegistrar {
 	}
 
 	public static class MonsterReceived {
+
+	}
+
+	public static class ItemReceived {
 
 	}
 
@@ -298,6 +318,8 @@ public class Registrar implements NetworkRegistrar {
 		public int dir = 0;
 		public int type = 0;
 
+		public boolean dead = false;
+
 		public MonsterSync() {
 
 		}
@@ -323,6 +345,7 @@ public class Registrar implements NetworkRegistrar {
 		public boolean unlock = false;
 		public int diff = 0;
 		public boolean warp = false;
+		public boolean dead = false;
 
 		public PlayerSync() {
 

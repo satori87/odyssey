@@ -5,6 +5,7 @@ import com.bg.bearplane.gui.ListBox;
 import com.bg.bearplane.gui.Scene;
 import com.bg.ody.client.core.Odyssey;
 import com.bg.ody.client.core.Realm;
+import com.bg.ody.shared.Shared;
 
 public class EditListScene extends Scene {
 
@@ -20,8 +21,13 @@ public class EditListScene extends Scene {
 		case 1:
 			break;
 		case 2:
-			for (int i = 0; i < 255; i++) {
+			for (int i = 0; i < Shared.NUM_MONSTERS; i++) {
 				list.list.add((i + 1) + ": " + Realm.monsterData[i].name);
+			}
+			break;
+		case 3:
+			for (int i = 0; i < Shared.NUM_ITEMS; i++) {
+				list.list.add((i + 1) + ": " + Realm.itemData[i].name);
 			}
 			break;
 		}
@@ -35,11 +41,32 @@ public class EditListScene extends Scene {
 	}
 
 	public void confirm() {
-		if (list.sel >= 0 && list.sel < 255) {
+		int msel = 255;
+		switch (Odyssey.game.editType) {
+		case 2:
+			msel = Shared.NUM_MONSTERS;
+			break;
+		case 3:
+			msel = Shared.NUM_ITEMS;
+			break;
+		}
+		if (list.sel >= 0 && list.sel < msel) {
 			Odyssey.game.editNum = list.sel;
 			Odyssey.game.listScroll = list.scroll;
-			change("editMonster");
-			Odyssey.editMonsterScene.load(Realm.monsterData[list.sel]);
+
+			switch (Odyssey.game.editType) {
+			case 1:
+				break;
+			case 2:
+				change("editMonster");
+				Odyssey.editMonsterScene.load(Realm.monsterData[list.sel]);
+				break;
+			case 3:
+				change("editItem");
+				Odyssey.editItemScene.load(Realm.itemData[list.sel]);
+				break;
+			}
+
 		}
 	}
 

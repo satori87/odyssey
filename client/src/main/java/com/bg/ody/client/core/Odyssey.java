@@ -18,6 +18,7 @@ import com.bg.bearplane.net.packets.DisconnectError;
 import com.bg.bearplane.net.packets.Logon;
 import com.bg.bearplane.net.packets.PingPacket;
 import com.bg.ody.client.scenes.CharacterScene;
+import com.bg.ody.client.scenes.EditItemScene;
 import com.bg.ody.client.scenes.EditListScene;
 import com.bg.ody.client.scenes.LoginScene;
 import com.bg.ody.client.scenes.MapOptionsScene;
@@ -30,14 +31,17 @@ import com.bg.ody.client.scenes.PlayScene;
 import com.bg.ody.client.scenes.TestMapScene;
 import com.bg.ody.client.scenes.UpdateScene;
 import com.bg.ody.shared.Shared;
+import com.bg.ody.shared.ItemData;
 import com.bg.ody.shared.MapData;
 import com.bg.ody.shared.MonsterData;
 import com.esotericsoftware.kryo.util.IntMap;
 import com.bg.ody.shared.Registrar.AdminCommand;
+import com.bg.ody.shared.Registrar.AttackData;
 import com.bg.ody.shared.Registrar.CharacterCreated;
 import com.bg.ody.shared.Registrar.Chunk;
 import com.bg.ody.shared.Registrar.DiscardMap;
 import com.bg.ody.shared.Registrar.DoorSync;
+import com.bg.ody.shared.Registrar.ItemReceived;
 import com.bg.ody.shared.Registrar.MapReceived;
 import com.bg.ody.shared.Registrar.MonsterReceived;
 import com.bg.ody.shared.Registrar.MonsterSync;
@@ -83,6 +87,7 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 
 	// scenes
 	public static EditMonsterScene editMonsterScene = new EditMonsterScene();
+	public static EditItemScene editItemScene = new EditItemScene();
 	public static MapOptionsScene mapOptionsScene = new MapOptionsScene();
 	public static EditListScene editListScene = new EditListScene();
 	public static LoginScene loginScene = new LoginScene();
@@ -200,7 +205,7 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 				}
 			}
 		} catch (Exception e) {
-			Log.debug(rest);
+			Log.error(e);
 		}
 	}
 
@@ -409,6 +414,10 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 			ac.i = 2;
 			sendTCP(ac);
 			break;
+		case 3: // editItem
+			ac.i = 3;
+			sendTCP(ac);
+			break;
 
 		}
 	}
@@ -436,6 +445,7 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 		Scene.addScene("editList", editListScene);
 		Scene.addScene("mapOptions", new MapOptionsScene());
 		Scene.addScene("options", optionsScene);
+		Scene.addScene("editItem", editItemScene);
 
 	}
 
@@ -522,14 +532,48 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 		try {
 			if (object == null) {
 				return;
-			}
-			if (!(object instanceof PingPacket)) {
-				// Log.debug(object.getClass().getCanonicalName());
-			}
-			// Lo.debug("Packet " + object.getClass().getName() + " received");
-			if (object instanceof SendChat) {
+			} else if (object instanceof SendChat) {
 				SendChat sc = (SendChat) object;
 				addChat(sc.channel, sc.s, sc.col);
+			} else if (object instanceof AttackData) {
+				AttackData ad = (AttackData) object;
+				if (ad.attacker == cid && ad.playerAttacker) {
+					long diff = tick - getMe().lastReqAttackAt;
+					getMe().attackStamp = tick + ad.attackTime - diff / 2;
+				}
+				Sprite attacker = null;
+				Sprite defender = null;
+				if (ad.playerDefender) {
+					defender = player(ad.defender);
+				} else {
+					defender = monster(ad.defender);
+				}
+				if (ad.playerAttacker) {
+					attacker = player(ad.attacker);
+				} else {
+					attacker = monster(ad.attacker);
+				}
+				attacker.dir = ad.d;
+				attacker.attacking = true;
+				attacker.attackTime = ad.attackTime;
+				attacker.attackingStamp = tick + ad.attackTime / 2;
+				if (!ad.playerAttacker || ad.attacker != cid) {
+					attacker.attackStamp = tick + ad.attackTime;
+				}
+				if (attacker != null && defender != null) {
+					if (ad.dam == -1) { // miss
+						Realm.addFloater(defender, 16, -16, "Miss", Color.WHITE, tick);
+					} else if (ad.dam == -2) { // cant attack
+
+					} else {
+						if (ad.deathblow) {
+							defender.dead = true;
+							defender.diedAt = tick;
+							defender.corpse = BearTool.randInt(1, 16);
+						}
+						Realm.addFloater(defender, 16, -16, ad.dam + "", Color.RED, tick);
+					}
+				}
 			} else if (object instanceof ResetMap) {
 				Realm.resetMap();
 			} else if (object instanceof PingPacket) {
@@ -551,9 +595,19 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 			} else if (object instanceof MonsterReceived) {
 				Scene.unlock();
 				Scene.change("editList");
+			} else if (object instanceof ItemReceived) {
+				Scene.unlock();
+				Scene.change("editList");
 			} else if (object instanceof MonsterData) {
 				MonsterData md = (MonsterData) object;
 				Realm.monsterData[md.id] = md;
+				for( Monster m : Realm.monsters.values()) {
+					m.load();
+					
+				}
+			} else if (object instanceof ItemData) {
+				ItemData id = (ItemData) object;
+				Realm.itemData[id.id] = id;
 			} else if (object instanceof JoinGame) {
 				JoinGame jg = (JoinGame) object;
 				joinGame = true;
@@ -665,6 +719,7 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 				} else {
 					m.moveStamp = 0;
 				}
+				m.dead = ms.dead;
 				m.update(tick);
 			} else if (object instanceof PlayerSync) {
 				PlayerSync ps = (PlayerSync) object;
@@ -711,6 +766,7 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 						c.moveStamp = tick - 1;
 						c.moveTimer = tick + 50;
 					}
+					c.dead = ps.dead;
 					c.update(tick);
 				}
 			} else if (object instanceof Chunk) {
@@ -736,6 +792,9 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 				} else if (c.last == 2) { // monster chunks
 					Realm.monsterData = (MonsterData[]) BearTool.deserialize(updateBytes, MonsterData[].class);
 					updateBytes = new byte[0];
+				} else if (c.last == 3) {
+					Realm.itemData = (ItemData[]) BearTool.deserialize(updateBytes, ItemData[].class);
+					updateBytes = new byte[0];
 				}
 			} else if (object instanceof DiscardMap) {
 				Scene.unlock();
@@ -758,7 +817,12 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 					Scene.change("editList");
 					break;
 				case 3: // edit monster #:
-					Scene.change("editMonster");
+					if (editType != 3) {
+						editType = 3;
+						editNum = 0;
+						listScroll = 0;
+					}
+					Scene.change("editList");
 					break;
 				}
 			}

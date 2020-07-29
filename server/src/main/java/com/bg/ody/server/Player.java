@@ -8,17 +8,20 @@ import com.bg.ody.shared.Shared;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.Queue;
 import com.bg.bearplane.engine.BearTool;
+import com.bg.bearplane.engine.Log;
 import com.bg.bearplane.net.packets.PingPacket;
+import com.bg.ody.shared.ItemData;
 import com.bg.ody.shared.MapData;
 import com.bg.ody.shared.MonsterData;
 import com.bg.ody.shared.PMap;
 import com.bg.ody.shared.Registrar.AdminCommand;
+import com.bg.ody.shared.Registrar.AttackData;
 import com.bg.ody.shared.Registrar.ChangeDirection;
 import com.bg.ody.shared.Registrar.ChangeDoor;
 import com.bg.ody.shared.Registrar.Chunk;
-import com.bg.ody.shared.Registrar.ClientAction;
 import com.bg.ody.shared.Registrar.DiscardMap;
 import com.bg.ody.shared.Registrar.Exit;
+import com.bg.ody.shared.Registrar.ItemReceived;
 import com.bg.ody.shared.Registrar.JoinGame;
 import com.bg.ody.shared.Registrar.MapReceived;
 import com.bg.ody.shared.Registrar.MonsterReceived;
@@ -27,6 +30,7 @@ import com.bg.ody.shared.Registrar.PlayerData;
 import com.bg.ody.shared.Registrar.PlayerJoined;
 import com.bg.ody.shared.Registrar.PlayerParted;
 import com.bg.ody.shared.Registrar.PlayerSync;
+import com.bg.ody.shared.Registrar.ReqAttack;
 import com.bg.ody.shared.Registrar.SendChat;
 import com.bg.ody.shared.Registrar.SyncDirection;
 
@@ -68,6 +72,15 @@ public class Player extends Mobile {
 
 	public void update(long tick) {
 		this.tick = tick;
+		if (dead) {
+			if (tick - diedAt > 5000) {
+				// respawn
+				dead = false;
+				hp = maxHP;
+				warp(Shared.SPAWN_MAP, Shared.SPAWN_X, Shared.SPAWN_Y);
+				sync();
+			}
+		}
 	}
 
 	public void updatePlayerAssets(int[] mapVersions) {
@@ -92,6 +105,11 @@ public class Player extends Mobile {
 				for (int i = 0; i < chunks.length; i++) {
 					sendTCP(new Chunk(chunks[i], 0, i == chunks.length - 1 ? 2 : 0, i));
 				}
+				str = BearTool.serialize(Realm.itemData);
+				chunks = BearTool.divideArray(str, Shared.CHUNK_SIZE);
+				for (int i = 0; i < chunks.length; i++) {
+					sendTCP(new Chunk(chunks[i], 0, i == chunks.length - 1 ? 3 : 0, i));
+				}
 				join();
 			}
 		} else {
@@ -105,9 +123,13 @@ public class Player extends Mobile {
 	}
 
 	public void reqAttack() {
+		if (dead)
+			return;
 		if (tick > attackStamp) {// lets check if youre within attack time
+			attackTime = getAttackTime();
+			attackStamp = tick + attackTime;
 			int nx = x;
-			int ny = 0;
+			int ny = y;
 			switch (dir) {
 			case 0:
 				ny--;
@@ -125,25 +147,29 @@ public class Player extends Mobile {
 			List<Mobile> at = map().getMobsNear(nx, ny, 0);
 			if (at.size() > 0) { // then lets check to make sure theres a valid target there
 				attack(at.get(0));
-			} else {
-				// nothing there to attack! this is where maybe attacking walls can go
+			} else { // swing at air
+				attackTime = getAttackTime();
+				AttackData ad = new AttackData(map, uid, (this instanceof Player), -1, false, 0, attackTime, dir);
+				map().send(ad);
 			}
 		} else {
+			Log.debug("hack attack?");
 			// log how many times this happens and report unusually high amounts
 		}
 	}
 
 	public void processPacket(Object data) {
 		if (data instanceof Move) {
+			if (dead) {
+				sync();
+				return;
+			}
 			Move m = (Move) data;
 			move(m.dir, m.run);
-		} else if (data instanceof ClientAction) {
-			ClientAction ca = (ClientAction) data;
-			switch (ca.act) {
-			case 1: // attack
-				reqAttack();
-				break;
-			}
+		} else if (data instanceof ReqAttack) {
+
+			ReqAttack ca = (ReqAttack) data;
+			reqAttack();
 		} else if (data instanceof PingPacket) {
 			PingPacket pp = (PingPacket) data;
 			sendTCP(pp);
@@ -154,6 +180,8 @@ public class Player extends Mobile {
 			}
 
 		} else if (data instanceof ChangeDirection) {
+			if (dead)
+				return;
 			ChangeDirection cd = (ChangeDirection) data;
 			if (cd.d < 0)
 				cd.d = 0;
@@ -181,6 +209,9 @@ public class Player extends Mobile {
 				case 2: // edit monster
 					sendTCP(ac);
 					break;
+				case 3: // edit item
+					sendTCP(ac);
+					break;
 				case 100: // warp to coords
 					int m = ac.j;
 					int x = ac.k;
@@ -205,7 +236,7 @@ public class Player extends Mobile {
 		} else if (data instanceof MonsterData) {
 			MonsterData md = (MonsterData) data;
 			if (access > 0) {
-				if (md.id >= 0 && md.id < 255) {
+				if (md.id >= 0 && md.id < Shared.NUM_MONSTERS) {
 					Realm.monsterData[md.id] = md;
 					game.sendAll(md);
 					Realm.saveMonster(md.id);
@@ -213,6 +244,18 @@ public class Player extends Mobile {
 				}
 			} else {
 				disconnect("No access to edit monster");
+			}
+		} else if (data instanceof ItemData) {
+			ItemData id = (ItemData) data;
+			if (access > 0) {
+				if (id.id >= 0 && id.id < Shared.NUM_ITEMS) {
+					Realm.itemData[id.id] = id;
+					game.sendAll(id);
+					Realm.saveItem(id.id);
+					sendTCP(new ItemReceived());
+				}
+			} else {
+				disconnect("No access to edit item");
 			}
 		} else if (data instanceof MapReceived) {
 			sendNextMap();
@@ -253,6 +296,8 @@ public class Player extends Mobile {
 				disconnect("Wtf u doing?");
 			}
 		} else if (data instanceof ChangeDoor) {
+			if (dead)
+				return;
 			ChangeDoor cd = (ChangeDoor) data;
 			if (cd.id >= 0 && cd.id < 100) {
 				if (map().doors[cd.id] != null) {
@@ -295,13 +340,17 @@ public class Player extends Mobile {
 	}
 
 	public void join() {
+		if (maxHP == 0) {
+			maxHP = 100;
+			hp = 100;
+		}
 		joined = true;
 		if (map == 0) {
 			// first join! welcome them maybe?
 			map = (int) (Math.random() * 10.0) + 1;
-			map = 1;
-			x = 5;
-			y = 5;
+			map = Shared.SPAWN_MAP;
+			x = Shared.SPAWN_X;
+			y = Shared.SPAWN_Y;
 		}
 		dir = 1;
 		PlayerJoined pj = new PlayerJoined(uid, name, spriteSet, sprite);
@@ -393,6 +442,7 @@ public class Player extends Mobile {
 			ps.diff = 0;
 		}
 		ps.unlock = unlock;
+		ps.dead = dead;
 		return ps;
 	}
 
