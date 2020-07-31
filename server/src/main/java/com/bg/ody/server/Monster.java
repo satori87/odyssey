@@ -1,9 +1,14 @@
 package com.bg.ody.server;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.bg.bearplane.ai.FlatTiledNode;
 import com.bg.bearplane.ai.TiledSmoothableGraphPath;
+import com.bg.bearplane.engine.BearTool;
 import com.bg.bearplane.engine.Coord;
 import com.bg.bearplane.engine.Log;
+import com.bg.ody.shared.MapData;
 import com.bg.ody.shared.MonsterData;
 import com.bg.ody.shared.Registrar.MonsterSync;
 import com.bg.ody.shared.Shared;
@@ -14,7 +19,9 @@ public class Monster extends Mobile {
 
 	public Spawner spawner;
 
-	int state = 0; // 0 = wander, 1 = pursue, 2 = flee, 3 = idle
+	long targetStamp = 0;
+
+	// int state = 0; // 0 = wander, 1 = pursue, 2 = flee, 3 = idle
 
 	// TiledSmoothableGraphPath<FlatTiledNode> path;
 
@@ -24,6 +31,12 @@ public class Monster extends Mobile {
 
 	public long wanderStamp = 0;
 	public int wanderDelay = 2;
+
+	int pathCount = 0;
+	TiledSmoothableGraphPath<FlatTiledNode> path = new TiledSmoothableGraphPath<FlatTiledNode>();
+	int curX = 0;
+	int curY = 0;
+	boolean recalc = false;
 
 	public Monster(Game game) {
 		super(game);
@@ -53,6 +66,7 @@ public class Monster extends Mobile {
 		} else {
 			ms.diff = 0;
 		}
+		ms.dead = dead;
 		return ms;
 	}
 
@@ -80,22 +94,27 @@ public class Monster extends Mobile {
 		return r;
 	}
 
-	void wander() {
-		state = 0;
-		Coord c = map().findFreeNode(spawner.x, spawner.y, 50);
-		pathX = c.x;
-		pathY = c.y;
-		wanderStamp = tick + wanderDelay + (int) (Math.random() * 1000) - 500;
+	void setPath(int x, int y) {
+		pathX = x;
+		pathY = y;
 		recalc = true;
 		pathing = true;
-
+		pathStamp = tick + 200;
 	}
 
-	int pathCount = 0;
-	TiledSmoothableGraphPath<FlatTiledNode> path = new TiledSmoothableGraphPath<FlatTiledNode>();
-	int curX = 0;
-	int curY = 0;
-	boolean recalc = false;
+	void noPath() {
+		pathing = false;
+		target = null;
+		recalc = false;
+		wander();
+	}
+
+	void wander() {
+		target = null;
+		Coord c = map().findFreeNode(spawner.x, spawner.y, Realm.monsterData[this.type].wanderRange);
+		setPath(c.x, c.y);
+		wanderStamp = tick + wanderDelay + (int) (Math.random() * 1000) - 500;
+	}
 
 	public void calculatePath() {
 		recalc = false;
@@ -103,57 +122,219 @@ public class Monster extends Mobile {
 		map().calculatePath(path, x, y, pathX, pathY);
 	}
 
-	public void update(long tick) {
-		this.tick = tick;
-		if (!pathing) {
-			switch (state) {
-			case 0: // wander
-				if (tick > wanderStamp) {
-					wander();
+	void checkForTargets() {
+		// if (!Realm.monsterData[type].friendly) {
+		// we are not friendly
+
+		// check within sight range for enemy targets
+		List<Player> nearby = map().getPlayersNear(x, y, getSight());
+		if (nearby != null && nearby.size() > 0) {
+			int closest = 99999;
+			Player cp = null;
+			int d = 0;
+			for (Player p : nearby) {
+				if (!p.dead) {
+					d = (int) distanceTo(p);
+					if (d < closest) {
+						closest = d;
+						cp = p;
+					}
 				}
-				break;
+			}
+			if (cp != null) {
+				noPath();
+				target = cp;
 			}
 		} else {
-			switch (state) {
-			case 0: // wander
-				if (arrived() || path.getCount() < 1) {
-					pathing = false;
-					wanderStamp = tick + wanderDelay + (int) (Math.random() * 1000) - 500;
+
+		}
+		// }
+	}
+
+	int getSight() {
+		return Realm.monsterData[type].sight;
+	}
+
+	void checkCurrentTarget() {
+		boolean stillValid = false;
+		if (target != null) {
+			// target is not null
+			if (target.playing() && !target.dead) {
+				// target is playing
+				if (map().id == target.map().id) {
+					// we are on same map
+					if (inRange(target, getSight())) {
+						// we can still see this target
+						stillValid = true;
+					}
 				}
-				break;
+			}
+		}
+		if (!stillValid) {
+			noPath();
+		}
+	}
+
+	void checkForBetterTargets() {
+
+	}
+
+	long pathStamp = 0;
+	long recalcStamp = 0;
+	long strafeStamp = 0;
+
+	public void pathToTarget() {
+		List<Coord> valid = new ArrayList<Coord>();
+		if (MapData.inBounds(target.x, target.y - 1)) {
+			if (map().isVacantWalls(target.x, target.y - 1, 0, x, y) && map().isVacantTile(target.x, target.y - 1)
+					&& map().isVacantElse(target.x, target.y - 1)) {
+				valid.add(new Coord(target.x, target.y - 1));
+			}
+		}
+		if (MapData.inBounds(target.x, target.y + 1)) {
+			if (map().isVacantWalls(target.x, target.y + 1, 1, x, y) && map().isVacantTile(target.x, target.y + 1)
+					&& map().isVacantElse(target.x, target.y + 1)) {
+				valid.add(new Coord(target.x, target.y + 1));
+			}
+		}
+		if (MapData.inBounds(target.x - 1, target.y)) {
+			if (map().isVacantWalls(target.x - 1, target.y, 2, x, y) && map().isVacantTile(target.x - 1, target.y)
+					&& map().isVacantElse(target.x - 1, target.y)) {
+				valid.add(new Coord(target.x - 1, target.y));
+			}
+		}
+		if (MapData.inBounds(target.x + 1, target.y)) {
+			if (map().isVacantWalls(target.x + 1, target.y, 3, x, y) && map().isVacantTile(target.x + 1, target.y)
+					&& map().isVacantElse(target.x + 1, target.y)) {
+				valid.add(new Coord(target.x + 1, target.y));
+			}
+		}
+		int low = 99999;
+		double d = 0;
+		Coord lc = null;
+		for (Coord c : valid) {
+			d = distanceTo(c.x, c.y);
+			if ((int) d < low) {
+				low = (int) d;
+				lc = c;
+			}
+		}
+		if (lc != null) {
+			setPath(lc.x, lc.y);
+		}
+	}
+
+	boolean attacked = false;
+
+	void checkAttack() {
+		if (tick > moveStamp || tick > moveStamp - moveTime / 2) {
+			if (target != null && !attacked && tick > attackStamp) {
+				if (adjacentTo(target.x, target.y)) {
+					// attack!!!
+					attack(target);
+					attacked = true;
+					attackTime = getAttackTime();
+					attackStamp = tick + attackTime;
+				} else {
+					List<Player> nearby = map().getPlayersNear(x, y, 1);
+					for (Player p : nearby) {
+						if (adjacentTo(p.x, p.y)) {
+							if (!attacked && canAttack(p)) {
+								attacked = true;
+								attack(p);
+								attackTime = getAttackTime();
+								attackStamp = tick + attackTime;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	public void update(long tick) {
+		this.tick = tick;
+		if (tick > targetStamp) {
+			targetStamp = tick + 200;
+			if (target != null) {
+				// we are already targeting something, is it still valid?
+				checkCurrentTarget();
+			} // do not put else here, we want this next if to run in both cases
+			if (target == null) {
+				// we are not targeting anything, should we be?
+				checkForTargets();
+			} else {
+				checkForBetterTargets(); // TODO
 			}
 		}
 		if (pathing) {
-			if (recalc) {
+			if (target == null) { // wander
+				if (tick > wanderStamp) {
+					wander();
+				}
+			} else {
+				if (tick > pathStamp) {
+					pathStamp = tick + 200;
+					pathToTarget();
+				}
+
+				// we are following a path to our target
+			}
+		} else {
+			if (target == null) { // wander
+				if (arrived() || path.getCount() < 1) {
+					noPath();
+					wanderStamp = tick + wanderDelay + (int) (Math.random() * 1000) - 500;
+				}
+			} else {
+				// we have a target but no path to it
+
+				pathToTarget();
+			}
+		}
+		if (pathing) {
+			if (recalc || tick > recalcStamp) {
+				recalcStamp = tick + 200;
 				calculatePath();
 			}
 			if (tick > moveStamp) {
-				if (path.getCount() > 0) {
-					FlatTiledNode t = path.get(0);
-					int d = 4;
-					if (t.x > x) {
-						d = 3;
-					} else if (t.x < x) {
-						d = 2;
-					} else if (t.y < y) {
-						d = 0;
-					} else if (t.y > y) {
-						d = 1;
-					}
-					moved = false;
-					if (d < 4) {
-						move(d, false);
-					}
+				attacked = false;
+				checkAttack();
+				if (target != null && !adjacentTo(target.x, target.y)
+						|| (BearTool.randInt(1, 100) < 5 && tick > strafeStamp)) {
+					strafeStamp = tick + 2000;
+					if (path.getCount() > 0) {
+						FlatTiledNode t = path.get(0);
+						int d = 4;
+						if (t.x > x) {
+							d = 3;
+						} else if (t.x < x) {
+							d = 2;
+						} else if (t.y < y) {
+							d = 0;
+						} else if (t.y > y) {
+							d = 1;
+						}
+						moved = false;
+						if (d < 4) {
+							move(d, false);
+						}
 
-					if (moved) {
-						path.pop();
+						if (moved) {
+							path.pop();
+							// checkAttack();
+						} else {
+							if (target == null) {
+								wander();
+							}
+						}
 					} else {
-						if (state == 0) {
+						if (target == null) {
 							wander();
+						} else {
+
 						}
 					}
-				} else {
-					wander();
 				}
 			}
 		}
@@ -161,6 +342,10 @@ public class Monster extends Mobile {
 
 	public int getMoveTime(boolean run) {
 		return data().walkSpeed;
+	}
+
+	public int getAttackTime() {
+		return data().attackSpeed;
 	}
 
 	public MonsterData data() {

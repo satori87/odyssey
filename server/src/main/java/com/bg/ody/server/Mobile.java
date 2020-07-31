@@ -1,6 +1,8 @@
 package com.bg.ody.server;
 
+import com.bg.bearplane.engine.BearTool;
 import com.bg.bearplane.engine.Log;
+import com.bg.ody.shared.Registrar.AttackData;
 
 public class Mobile extends GameConnection {
 
@@ -11,14 +13,16 @@ public class Mobile extends GameConnection {
 	public int dir = 0;
 	public long moveStamp = 0;
 	int moveTime = 0;
+	public long lastMoveAt = 0;
+	int attackTime = 0;
+	public long attackStamp = 0;
+	public long lastAttackAt = 0;
+
 	boolean warp = false;
 
 	public boolean moved = false;
-
 	public boolean dead = false;
 	public long diedAt = 0;
-
-	public long lastMoveAt = 0;
 
 	long tick = 0;
 
@@ -28,8 +32,110 @@ public class Mobile extends GameConnection {
 	public int maxHP = 0;
 	public int hp = 0;
 
+	public Mobile target = null;
+
 	public Mobile(Game game) {
 		this.game = game;
+	}
+
+	public boolean playing() {
+		return true;
+	}
+
+	public boolean inRange(Mobile target, int range) {
+		return inRange(target.x, target.y, range);
+	}
+
+	public boolean inRange(int nx, int ny, int range) {
+		return (int) distanceTo(nx, ny) <= range;
+	}
+
+	public double distanceTo(int nx, int ny) {
+		return BearTool.distance(x, y, nx, ny);
+	}
+
+	public double distanceTo(Mobile target) {
+		return distanceTo(target.x, target.y);
+	}
+
+	public boolean canAttack(Mobile m) {
+		boolean can = true;
+		if (m instanceof Monster) {
+			// TODO
+		} else if (m instanceof Player) {
+			// TODO
+		}
+		return can;
+	}
+
+	public boolean adjacentTo(int nx, int ny) {
+		boolean a = false;
+		if (nx == x && (ny == y + 1 || ny == y - 1)) {
+			a = true;
+		}
+		if (ny == y && (nx == x + 1 || nx == x - 1)) {
+			a = true;
+		}
+		return a;
+	}
+
+	public int checkHit(Mobile m) {
+		// returns your score of hitting this target
+		return BearTool.randInt(1, 100);
+	}
+
+	public int checkBlock(Mobile m) {
+		// returns your score of blocking this target
+		return BearTool.randInt(1, 20);
+	}
+
+	public int checkDamage(Mobile m) {
+		// returns your damage against this target
+		return 5 + BearTool.randInt(0, 5);
+	}
+
+	public int checkArmor(Mobile m) {
+		// returns your armor against this target
+		return BearTool.randInt(2, 3);
+	}
+
+	public void attack(Mobile m) {
+
+		dir = BearTool.getDir(x, y, m.x, m.y);
+
+		if (canAttack(m)) {
+
+			if (checkHit(m) > m.checkBlock(this)) {
+
+				int dam = checkDamage(m) - m.checkArmor(this);
+				m.hp -= dam;
+
+				AttackData ad = new AttackData(map, uid, (this instanceof Player), m.uid, (m instanceof Player), dam,
+						attackTime, dir);
+				if (m.hp <= 0) {
+					m.die(this);
+					ad.deathblow = true;
+				}
+
+				map().send(ad);
+			} else { // miss
+				AttackData ad = new AttackData(map, uid, (this instanceof Player), m.uid, (m instanceof Player), -1,
+						attackTime, dir);
+				map().send(ad);
+			}
+		} else {
+			attackTime = getAttackTime();
+			AttackData ad = new AttackData(map, uid, (this instanceof Player), m.uid, (m instanceof Player), -2,
+					attackTime, dir);
+			map().send(ad);
+		}
+
+	}
+
+	public void die(Mobile m) {
+		// m killed you
+		dead = true;
+		diedAt = tick;
 	}
 
 	public Map map() {
@@ -38,6 +144,10 @@ public class Mobile extends GameConnection {
 
 	public int getMoveTime(boolean run) {
 		return 400;
+	}
+
+	public int getAttackTime() {
+		return 1000;
 	}
 
 	public void sync() {

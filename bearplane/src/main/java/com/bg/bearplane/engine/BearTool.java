@@ -132,6 +132,19 @@ public class BearTool {
 		return (x >= lowerX && x < upperX && y >= lowerY && y < upperY);
 	}
 
+	public static int getDir(int fx, int fy, int tx, int ty) {
+		if (ty < fy) {
+			return 0;
+		} else if (ty > fy) {
+			return 1;
+		} else if (tx < fx) {
+			return 2;
+		} else if (tx > fx) {
+			return 3;
+		}
+		return 0;
+	}
+
 	public static int reverseDir(int d) {
 		int n = d;
 		if (d == 0) {
@@ -161,21 +174,21 @@ public class BearTool {
 	}
 
 	public static int clearBit(int x, int kth) {
-		  return (x & ~(1 << kth));
-		}
+		return (x & ~(1 << kth));
+	}
 
 	public static boolean checkBit(int value, int bit) {
 		return ((value >> bit) & 1) != 0;
 	}
-	
+
 	public static int setBit(int value, int bit, boolean to) {
-		if(to) {
-			return setBit(value,bit);
+		if (to) {
+			return setBit(value, bit);
 		} else {
-			return clearBit(value,bit);
+			return clearBit(value, bit);
 		}
 	}
-	
+
 	public static List<String> wrapText(float scale, int width, String text) {
 		List<String> lines = new ArrayList<String>();
 		String line = "";
@@ -185,7 +198,7 @@ public class BearTool {
 			if (p.equals(" ")) { // finished a word, try to add it on
 				if (line.length() > 0) {
 					if (BearGame.assets.getStringWidth(line + " " + word, scale, 0, 1) > width) { // wont fit, start new
-																								// line
+																									// line
 						lines.add(line);
 						line = word;
 						word = "";
@@ -226,7 +239,5 @@ public class BearTool {
 		}
 		return lines;
 	}
-
-	
 
 }

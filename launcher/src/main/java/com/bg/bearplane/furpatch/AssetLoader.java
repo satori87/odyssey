@@ -129,9 +129,9 @@ public class AssetLoader
             return 0.0f;
         }
         char[] charArray;
+        int ascii = 0;
         for (int length = (charArray = s.toCharArray()).length, i = 0; i < length; ++i) {
-            final int ascii;
-            final char c = (char)(ascii = charArray[i]);
+            ascii = charArray[i];
             total += AssetLoader.fontWidth[ascii] * scale + padding * 2.0f + spacing;
         }
         return total;

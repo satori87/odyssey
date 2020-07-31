@@ -162,10 +162,10 @@ public class FlatTiledGraph implements TiledGraph<FlatTiledNode> {
 						map.tile[n.x + xOffset][n.y + yOffset].y)) {
 			if (map.isVacantElse(map.tile[n.x + xOffset][n.y + yOffset].x, map.tile[n.x + xOffset][n.y + yOffset].y)) {
 				n.connections.get(d).valid = true;
-				n.connections.get(d).cost = 1;
+				n.connections.get(d).cost = 1f;
 			} else {
 				n.connections.get(d).valid = true;
-				n.connections.get(d).cost = 20f;
+				n.connections.get(d).cost = 200f;
 			}
 		} else {
 			n.connections.get(d).cost = 9999f;

@@ -82,7 +82,7 @@ public class GameServer {
 					if (numConnections.get() <= Shared.MAX_USERS) {
 						for (Player pp : connections) {
 							if (pp.ip.equals(p.ip)) {
-								if (!Shared.ALLOW_MULTI) {
+								if (!Game.ALLOW_MULTI) {
 									game.disconnect(p, "Duplicate IP detected");
 								} else if (pp.account_id == 0) {
 									game.disconnect(p, "Duplicate IP detected");

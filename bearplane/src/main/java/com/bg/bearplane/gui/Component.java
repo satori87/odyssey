@@ -1,6 +1,5 @@
 package com.bg.bearplane.gui;
 
-import com.bg.bearplane.engine.Log;
 
 public abstract class Component {
 

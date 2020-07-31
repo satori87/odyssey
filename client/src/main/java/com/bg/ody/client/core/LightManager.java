@@ -3,7 +3,6 @@ package com.bg.ody.client.core;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
-
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -13,7 +12,6 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.bg.bearplane.engine.BearTool;
-import com.bg.bearplane.engine.Log;
 import com.bg.bearplane.gui.Scene;
 import com.bg.ody.shared.Shared;
 import com.bg.ody.shared.Tile;

@@ -1,7 +1,7 @@
 package com.bg.ody.server;
 
 import java.util.ArrayList;
-
+import java.util.List;
 import com.bg.bearplane.ai.FlatTiledGraph;
 import com.bg.bearplane.ai.FlatTiledNode;
 import com.bg.bearplane.ai.IndexedAStarPathFinder;
@@ -9,6 +9,7 @@ import com.bg.bearplane.ai.TiledManhattanDistance;
 import com.bg.bearplane.ai.TiledSmoothableGraphPath;
 import com.bg.bearplane.engine.BearTool;
 import com.bg.bearplane.engine.Coord;
+import com.bg.bearplane.engine.Log;
 import com.bg.ody.shared.MapData;
 import com.bg.ody.shared.MapOptions;
 import com.bg.ody.shared.PMap;
@@ -31,7 +32,7 @@ public class Map {
 	public MapOptions options = new MapOptions();
 	byte[] data = null;
 
-	public Monster[] monsters = new Monster[Shared.MAX_MONSTERS];
+	public Monster[] monsters = new Monster[Game.MAX_MONSTERS];
 	public ArrayList<Spawner> spawners = new ArrayList<Spawner>();
 	public ArrayList<Player> players = new ArrayList<Player>();
 	public Door[] doors = new Door[100];
@@ -73,7 +74,7 @@ public class Map {
 	}
 
 	public int getFreeMonster() {
-		for (int i = 0; i < Shared.MAX_MONSTERS; i++) {
+		for (int i = 0; i < Game.MAX_MONSTERS; i++) {
 			if (monsters[i] == null) {
 				return i;
 			}
@@ -82,7 +83,7 @@ public class Map {
 	}
 
 	public void reset() {
-		for (int i = 0; i < Shared.MAX_MONSTERS; i++) {
+		for (int i = 0; i < Game.MAX_MONSTERS; i++) {
 			monsters[i] = null;
 		}
 		for (int i = 0; i < 100; i++) {
@@ -158,11 +159,10 @@ public class Map {
 
 	public void join(Player p) {
 		// tell player everything thats on map
-
 		JoinMap jm = new JoinMap();
 		for (Player other : players) {
 			if (other.playing() && p != other && p.map == other.map) {
-				jm.players.add(new PlayerSync(p.uid, p.map, p.x, p.y, 0, p.dir, false));
+				jm.players.add(new PlayerSync(other.uid, other.map, other.x, other.y, 0, other.dir, false));
 			}
 		}
 		players.add(p);
@@ -187,7 +187,7 @@ public class Map {
 	}
 
 	public void update(long tick) {
-		if (players.size() > 0 || tick - lastHadPlayerAt < 10000) {
+		if (players.size() > 0 || tick - lastHadPlayerAt < 10000 || Game.PROCESS_IDLE_MAPS) {
 			this.tick = tick;
 			Monster m;
 			for (Spawner sp : spawners) {
@@ -198,7 +198,7 @@ public class Map {
 					d.update(tick);
 				}
 			}
-			for (int i = 0; i < Shared.MAX_MONSTERS; i++) {
+			for (int i = 0; i < Game.MAX_MONSTERS; i++) {
 				m = monsters[i];
 				if (m != null && m.dead) {
 					if (tick > m.diedAt + 10000) {
@@ -306,6 +306,41 @@ public class Map {
 		return true;
 	}
 
+	List<Player> getPlayersNear(int nx, int ny, int range) {
+		List<Player> mobs = new ArrayList<Player>();
+		for (Player p : players) {
+			if (p.playing() && !p.dead && p.inRange(nx, ny, range)) {
+				mobs.add(p);
+			}
+		}
+		return mobs;
+	}
+
+	List<Monster> getMonstersNear(int nx, int ny, int range) {
+		List<Monster> mobs = new ArrayList<Monster>();
+		for (Monster m : monsters) {
+			if (m.inRange(nx, ny, range) && !m.dead) {
+				mobs.add(m);
+			}
+		}
+		return mobs;
+	}
+
+	List<Mobile> getMobsNear(int nx, int ny, int range) {
+		List<Mobile> mobs = new ArrayList<Mobile>();
+		for (Monster m : monsters) {
+			if (m != null && m.inRange(nx, ny, range) && !m.dead) {
+				mobs.add(m);
+			}
+		}
+		for (Player p : players) {
+			if (p.playing() && !p.dead && p.inRange(nx, ny, range)) {
+				mobs.add(p);
+			}
+		}
+		return mobs;
+	}
+
 	public boolean isVacantTile(int x, int y) {
 		if (!MapData.inBounds(x, y)) {
 			return false;
@@ -318,7 +353,7 @@ public class Map {
 				return false;
 			}
 		}
-		if(t.wall[4]) {
+		if (t.wall[4]) {
 			return false;
 		}
 		return true;
@@ -410,8 +445,8 @@ public class Map {
 		do {
 			nx = BearTool.rndInt(x - range, x + range);
 			ny = BearTool.rndInt(y - range, y + range);
-			//nx = BearTool.rndInt(0, 35);
-			//ny = BearTool.rndInt(0, 35);
+			// nx = BearTool.rndInt(0, 35);
+			// ny = BearTool.rndInt(0, 35);
 			tries++;
 		} while (!MapData.inBounds(nx, ny) && (!isVacantTile(nx, ny) || !isVacantElse(nx, ny)) && tries < 1000);
 		if (tries < 1000) {

@@ -25,10 +25,11 @@ public class MySQL {
 		sdb = db;
 		suser = user;
 		spass = pass;
-		try {
-			Class.forName("com.mysql.jdbc.Driver");
+		try {   
+			//Class.forName("com.mysql.jdbc.Driver");
 			con = DriverManager.getConnection("jdbc:mysql://" + address + ":" + port + "/" + db, user, pass);
 			connected = true;
+			
 		} catch (Exception e) {
 			Log.error(e);
 			 connected = false;

@@ -20,14 +20,26 @@ public class Sprite {
 	public int dir = 0;
 	public int map = 0;
 
+	public int lastfloat = 0;
+
 	public long moveStamp = 0;
 	public long moveTimer = 0;
 	public int moveTime = 500;
+	public long attackStamp = 0;
+	public long attackingStamp = 0; // just used for the animation
+	// public long attackTimer = 0;
+	public int attackTime = 1000;
+	public long lastReqAttackAt = 0;
+	public boolean attacking = true;
 	public int moveDir = 0;
 	public int walkStep = 0;
 	public long delay = 0;
+	public boolean dead = false;
+	public long diedAt = 0;
 
 	long exitStamp = 0;
+
+	public int corpse = 0;
 
 	public Sprite(int set, int sprite) {
 		this.set = set;
@@ -126,7 +138,11 @@ public class Sprite {
 	}
 
 	public int getFrame() {
-		return dir * 3 + walkStep;
+		if (attacking) {
+			return dir * 3 + 2;
+		} else {
+			return dir * 3 + walkStep;
+		}
 	}
 
 	public void update(long tick) {
@@ -134,12 +150,17 @@ public class Sprite {
 		int step = 16;
 		int spw = 0;
 		walkStep = 0;
+		if (attacking) {
+			if (tick > attackingStamp) {
+				attacking = false;
+			}
+		}
+
 		if (tick > moveStamp) {
 			moveTime = 0;
 			XO = 0;
 			YO = 0;
-			//Log.debug("cool");
-		} else {
+		} else if (!dead) {
 			long diff = moveStamp - tick;
 			float p = ((float) diff / (float) (moveTime + delay)) * 32f;
 			if (this instanceof Monster) {
@@ -153,7 +174,7 @@ public class Sprite {
 			if (step == 0) {
 				walkStep = 0;
 			} else {
-				walkStep = (Math.round(p / (float)step) % 2);
+				walkStep = (Math.round(p / (float) step) % 2);
 			}
 			if (moveDir == 3) {
 				XO = -Math.round(p);
@@ -163,6 +184,9 @@ public class Sprite {
 				YO = Math.round(p);
 			} else if (moveDir == 1) {
 				YO = -Math.round(p);
+			} else {
+				XO = 0;
+				YO = 0;
 			}
 		}
 		// }
