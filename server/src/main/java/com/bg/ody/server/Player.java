@@ -52,6 +52,8 @@ public class Player extends Mobile {
 	public int intelligence = 0;
 	public int wisdom = 0;
 
+	public Container items = new Container(100, 1, true, 100);
+
 	public Player(Game game) {
 		super(game);
 	}
@@ -245,7 +247,9 @@ public class Player extends Mobile {
 			} else {
 				disconnect("No access to edit monster");
 			}
+
 		} else if (data instanceof ItemData) {
+			Log.debug("derp");
 			ItemData id = (ItemData) data;
 			if (access > 0) {
 				if (id.id >= 0 && id.id < Shared.NUM_ITEMS) {

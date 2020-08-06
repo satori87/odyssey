@@ -69,6 +69,11 @@ public class TextBox extends Component {
 						for (TextBox t : f.textBoxes) {
 							t.focus = false;
 						}
+						for(Frame ff : f.frames) {
+							for (TextBox t : ff.textBoxes) {
+								t.focus = false;
+							}
+						}
 					}
 					focus = true;
 				}

@@ -11,6 +11,7 @@ import java.util.LinkedList;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 import com.bg.bearplane.engine.BearTool;
+import com.bg.bearplane.engine.Log;
 import com.bg.bearplane.engine.MySQL;
 import com.bg.ody.shared.ItemData;
 import com.bg.ody.shared.MapData;
@@ -135,17 +136,22 @@ public class Realm {
 		String statement = "UPDATE items SET name=?,data=? WHERE id=?";
 		LinkedList<Object> obj = new LinkedList<Object>();
 		obj.add(itemData[item].name);
+		Log.debug("Saving name: " + itemData[item].name);
 		obj.add(BearTool.serialize(itemData[item]));
 		obj.add(item);
 		MySQL.save(statement, obj);
 	}
 
 	public static void loadItems() {
+		int i = 0;
 		try {
 			ResultSet rs;
-			rs = MySQL.get("SELECT id,data FROM items");
+			rs = MySQL.get("SELECT id,data,name FROM items");
 			while (rs.next()) {
-				itemData[rs.getInt(1)] = (ItemData) BearTool.deserialize((byte[]) rs.getObject(2), ItemData.class);
+				i = rs.getInt(1);
+				itemData[i] = (ItemData) BearTool.deserialize((byte[]) rs.getObject(2), ItemData.class);
+				itemData[i].name = rs.getString(3);
+				Log.debug("Loading name: " + itemData[i].name);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -153,12 +159,14 @@ public class Realm {
 	}
 
 	public static void loadMonsters() {
+		int i = 0;
 		try {
 			ResultSet rs;
-			rs = MySQL.get("SELECT id,data FROM monsters");
+			rs = MySQL.get("SELECT id,data,name FROM monsters");
 			while (rs.next()) {
-				monsterData[rs.getInt(1)] = (MonsterData) BearTool.deserialize((byte[]) rs.getObject(2),
-						MonsterData.class);
+				i = rs.getInt(1);
+				monsterData[i] = (MonsterData) BearTool.deserialize((byte[]) rs.getObject(2), MonsterData.class);
+				monsterData[i].name = rs.getString(3);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

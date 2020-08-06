@@ -139,19 +139,17 @@ public class LiveMapScene extends Scene {
 	}
 
 	public void render() {
-		Scene.batcher.setColor(1, 1, 1, 1);
 		super.render();
+		updateCamera();
+		drawMap();
+		drawChat();
+	}
+
+	public void updateCamera() {
 		int cx = character.trueX();
 		int cy = character.trueY() + 16;
-
-		int lx = Shared.GAME_WIDTH / 2;
-		int rx = Shared.MAP_WIDTH * 32 - Shared.GAME_WIDTH / 2;
-		int ty = Shared.GAME_HEIGHT / 2;
-		int by = Shared.MAP_WIDTH * 32 - Shared.GAME_HEIGHT / 2;
-
-		int ncx = Math.round(cam.position.x);
-		int ncy = Math.round(cam.position.y);
-
+		int ncx = (int) cam.position.x;
+		int ncy = (int) cam.position.y;
 		if (cx - ncx > Shared.BOUNDING_BOX * 32) {
 			ncx = cx - Shared.BOUNDING_BOX * 32;
 		} else if (ncx - cx > (Shared.BOUNDING_BOX + 1) * 32) {
@@ -162,22 +160,6 @@ public class LiveMapScene extends Scene {
 		} else if (ncy - cy > Shared.BOUNDING_BOX * 32) {
 			ncy = cy + Shared.BOUNDING_BOX * 32;
 		}
-
-		if (ncx < lx) {
-			// ncx = lx;
-		}
-		if (ncx > rx) {
-			// ncx = rx;
-		}
-		if (ncy < ty) {
-			// ncy = ty;
-		}
-		if (ncy > by) {
-			// ncy = by;
-		}
-
-		drawMap();
-		drawChat();
 		moveCameraTo(ncx, ncy);
 	}
 
@@ -190,7 +172,6 @@ public class LiveMapScene extends Scene {
 				drawFontAbs(0, 4, Odyssey.game.chatLines * 20 - i * 20, ce.s, false, 1, ce.col);
 			}
 		}
-
 		if (Odyssey.game.timers.get(250).alt && Odyssey.game.curChatText.length() < 1) {
 			drawFontAbs(0, 4, 4, "|" + Odyssey.game.curChatText, false, 1);
 		}
@@ -412,7 +393,7 @@ public class LiveMapScene extends Scene {
 			for (Sprite c : Realm.players.values()) {
 				if (c.map == Realm.curMap) {
 					if (c.dead) {
-						dt = new DrawTask(i, 13, c.corpse, c.trueX(), c.trueY());
+						dt = new DrawTask(i, 12, c.corpse, c.trueX(), c.trueY());
 						al = (float) ((c.diedAt + 10000) - tick) / 10000f;
 						al += .3f;
 						if (al < 0)
@@ -436,7 +417,7 @@ public class LiveMapScene extends Scene {
 			for (Monster c : Realm.monsters.values()) {
 				if (c.map == Realm.curMap) {
 					if (c.dead) {
-						dt = new DrawTask(i, 13, c.corpse, c.trueX(), c.trueY());
+						dt = new DrawTask(i, 12, c.corpse, c.trueX(), c.trueY());
 						al = (float) ((c.diedAt + 10000) - tick) / 10000f;
 						al += .3f;
 						if (al < 0)
@@ -618,9 +599,9 @@ public class LiveMapScene extends Scene {
 
 	public void switchTo() {
 		super.switchTo();
-		Shared.GAME_WIDTH = 1024;
-		Gdx.graphics.setWindowedMode(Shared.GAME_WIDTH, Shared.GAME_HEIGHT);
-		setupScreen(Shared.GAME_WIDTH, Shared.GAME_HEIGHT);
+		// Shared.GAME_WIDTH = 1366;
+		 //Gdx.graphics.setWindowedMode(Shared.GAME_WIDTH, Shared.GAME_HEIGHT);
+		// setupScreen(Shared.GAME_WIDTH, Shared.GAME_HEIGHT);
 		int cx = character.trueX() + 16;
 		int cy = character.trueY() + 16;
 		if (cx < Shared.GAME_WIDTH / 2) {

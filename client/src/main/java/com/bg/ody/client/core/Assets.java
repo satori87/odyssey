@@ -66,6 +66,7 @@ public class Assets extends BearNecessities implements BearEssentials {
 			loadAllPNGFromDir("assets/iface");
 			loadAllPNGFromDir("assets/sprites");
 			loadAllPNGFromDir("assets/tiles");
+			loadAllPNGFromDir("assets/objects");			
 		} catch (Exception e) {
 			Log.error(e);
 			System.exit(0);

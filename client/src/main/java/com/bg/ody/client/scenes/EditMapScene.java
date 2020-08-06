@@ -311,9 +311,9 @@ public class EditMapScene extends RenderEditMapScene {
 			input.mouseDown[0] = false;
 			input.wasMouseJustClicked[0] = false;
 			super.switchTo();
-			Shared.GAME_WIDTH = 1376;
-			Gdx.graphics.setWindowedMode(Shared.GAME_WIDTH, Shared.GAME_HEIGHT);
-			setupScreen(Shared.GAME_WIDTH, Shared.GAME_HEIGHT);
+			//Shared.GAME_WIDTH = 1376;
+			//Gdx.graphics.setWindowedMode(Shared.GAME_WIDTH, Shared.GAME_HEIGHT);
+			//setupScreen(Shared.GAME_WIDTH, Shared.GAME_HEIGHT);
 			scrollX = Math.round(cam.position.x / 32 - Shared.GAME_WIDTH / 64);
 			scrollY = Math.round(cam.position.y / 32 - Shared.GAME_HEIGHT / 64);
 			moveCameraTo(Shared.GAME_WIDTH / 2, Shared.GAME_HEIGHT / 2);

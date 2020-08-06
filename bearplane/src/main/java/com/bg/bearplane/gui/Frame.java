@@ -22,6 +22,19 @@ public class Frame extends Component {
 
 	Frame parent = null;
 
+
+	public List<TextBox> fields;
+	
+	public Frame(Scene scene) {
+		x = 0;
+		y = 0;
+		width = 0;
+		height = 0;
+		useBackground = false;
+		centered = false;
+		useFrame = false;
+	}
+	
 	public Frame(Scene scene, int x, int y, int width, int height, boolean useBackground, boolean centered,
 			boolean useFrame) {
 		super(scene, 0, x, y);

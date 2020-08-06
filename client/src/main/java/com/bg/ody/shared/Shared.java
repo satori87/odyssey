@@ -2,14 +2,14 @@ package com.bg.ody.shared;
 
 public class Shared {
 
-	public static String TITLE_STRING = "Odyssey: Dreams of Yore";
+	public static String TITLE_STRING = "Odyssey Beta";
 
 	public static final int MAX_LOGIN_ATTEMPTS = 4;
 	public static final int MAX_USERS = 100;
 	public static final int TCP_PORT = 2597;
 	public static final int UDP_PORT = 2598;
 
-	public static int GAME_WIDTH = 1024;
+	public static int GAME_WIDTH = 1366;
 	public static int GAME_HEIGHT = 768;
 
 	public static final int MAP_WIDTH = 36;
@@ -30,12 +30,12 @@ public class Shared {
 
 	public static final int CHUNK_SIZE = 8192;
 
-	public static final String GAME_NAME = "Odyssey";
+	public static final String GAME_NAME = "Odyssey Beta";
 
 	public static final String SERVER_IP = "server.bearable.games";
-	public static final String DEV_IP = "dev.bearable.games";
+	// public static final String DEV_IP = "dev.bearable.games";
 
-	// public static final String SERVER_IP = "127.0.0.1";
+	public static final String DEV_IP = "127.0.0.1";
 	public static final String CLIENT_VERSION = "bananas17";
 
 	public static final int SPAWN_MAP = 1;
@@ -46,9 +46,9 @@ public class Shared {
 
 	public static short[][][][] edges = new short[2][2][2][2];
 
-	public static String[] tilesets = new String[] { "magic-terrain", "magic-trees", "magic-nature", "magic-buildings",
-			"magic-doodads", "magic-doodads2", "carpets", "floors-brick", "floors-cobble", "floors-tile", "floors-wood",
-			"floors-misc", "misc", "markings", "walls", "hdoor", "vdoor", "auto-caves", "auto-mountains",
+	public static String[] tilesets = new String[] { "magic-terrain", "magic-trees", "magic-nature", "magic-doodads",
+			"magic-doodads2", "carpets", "floors-brick", "floors-cobble", "floors-tile", "floors-wood", "floors-misc",
+			"misc", "markings", "walls-misc", "walls-wood", "hdoor", "vdoor", "auto-caves", "auto-mountains",
 			"auto-terrain", "auto-terrain2", "auto-walls", "auto-walls2" };
 	public static String[] spritesets = new String[] { "players", "animals", "beasts", "humanoid", "supernatural",
 			"human-common", "human-fighter", "human-magic" };
@@ -59,6 +59,21 @@ public class Shared {
 	public static String[] fxLayerName = new String[] { "BG3", "Mid", "FG0", "Above All" };
 	public static String[] gateName = new String[] { "Swings", "Slides Up", "Slides Down", "Slides Left",
 			"Slides Right", "Splits", "Disappears" };
+
+	public static String[] objectSets = new String[] { "items_accessory", "items_ammo", "items_body",
+			"items_consumable", "items_feet", "items_hand", "items_head", "items_legs", "items_misc", "items_regents",
+			"items_shield", "items_tools", "items_weapon_crushing", "items_weapon_piercing", "items_weapon_slashing",
+			"items_weapon_slashing2", "items_weapon_wand" };
+
+	public static String[] classes = new String[] { "Knight", "Paladin", "Barbarian", "Rogue", "Cleric", "Dark Mage",
+			"Necromancer", "Wizard" };
+	
+	public static String[] armorTypes = new String[] {"Shield", "Chest", "Cape", "Boots", "Hands", "Head", "Accessory", "Feet", "Ring"};
+
+	public static String[] objRow1 = new String[] { "accessory", "ammo", "body", "consumable", "feet", "hand", "head",
+			"legs", "misc" };
+	public static String[] objRow2 = new String[] { "regents", "shield", "tool", "crush", "pierce", "slash", "slash2",
+			"wand" };
 
 	public static boolean validName(String name) {
 		if (name != null && name.length() >= MIN_NAME_LEN && name.length() <= MAX_NAME_LEN) {

@@ -3,7 +3,7 @@
   <dontWrapJar>true</dontWrapJar>
   <headerType>gui</headerType>
   <jar>launcher.jar</jar>
-  <outfile>E:\odyssey\build-win\Odyssey.exe</outfile>
+  <outfile>C:\odyssey\installer\Odyssey.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir>.</chdir>
@@ -13,7 +13,7 @@
   <stayAlive>false</stayAlive>
   <restartOnCrash>false</restartOnCrash>
   <manifest></manifest>
-  <icon>E:\odyssey\build-win\touchofdeath.ico</icon>
+  <icon>C:\odyssey\installer\touchofdeath.ico</icon>
   <jre>
     <path>jre</path>
     <bundledJre64Bit>true</bundledJre64Bit>

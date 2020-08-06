@@ -7,10 +7,14 @@
 /installer/Output/OdysseySetup.exe
 /installer/launcher.jar
 /installer/Odyssey.exe
+/installer32/assets/
+/installer32/jre/
+/installer32/Output/OdysseySetup.exe
+/installer32/launcher.jar
+/installer32/Odyssey.exe
 /launcher/assets/
 /photoshop/
 /server/logs/
-/server/maps/
 /tools/
 /videos/
 /website/

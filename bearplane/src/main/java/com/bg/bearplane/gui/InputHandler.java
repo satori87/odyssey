@@ -23,7 +23,6 @@ public class InputHandler implements InputProcessor {
 	public int mouseY = 0;
 	public Queue<Integer> scrolls = new Queue<Integer>();
 
-	public float ratio = 1f;
 	
 	public InputHandler() {
 		keyPress = new ArrayList<Integer>();

@@ -47,6 +47,7 @@ public class Game {
 	public static long tick = 0;
 
 	long sqlStamp = 0;
+	long sqlReconnectStamp = 0;
 
 	public Game(GameServer server) {
 		this.gameServer = server;
@@ -71,10 +72,14 @@ public class Game {
 			}
 			world.update(tick);
 		} else {
-			Log.error("SQL Connection failed. Retrying...");
-			MySQL.connectSQL(MySQL.saddress, MySQL.sport, MySQL.sdb, MySQL.suser, MySQL.spass);
+			if (tick > sqlReconnectStamp) {
+				sqlReconnectStamp = tick + 5000;
+				Log.error("SQL Connection failed. Retrying in 5 seconds.");
+				MySQL.connectSQL(MySQL.saddress, MySQL.sport, MySQL.sdb, MySQL.suser, MySQL.spass);
+
+			}
 		}
-		for(Player p : players.values()) {
+		for (Player p : players.values()) {
 			p.update(tick);
 		}
 

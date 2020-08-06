@@ -297,7 +297,7 @@ public class Patch {
 					this.buttons[i].render();
 				}
 			}
-			this.screen.batcher.draw(AssetLoader.bannerTex, 32.0f, 0.0f, 576.0f, 128.0f, 0, 0, 576, 128, false, true);
+			this.screen.batcher.draw(AssetLoader.bannerTex, 42, 30, 555.0f, 110.0f, 0, 0, 576, 128, false, true);
 			this.screen.drawFrame(32, 148, 544, 256, true);
 			int c = 0;
 			int d = 0;
@@ -324,7 +324,7 @@ public class Patch {
 		this.downloading.set(true);
 		this.curName = name;
 		this.curFile = name;
-		(this.request = new Net.HttpRequest("GET")).setTimeOut(200);
+		(this.request = new Net.HttpRequest("GET")).setTimeOut(Prefs.HTTPTIMEOUT);
 		String remoteName = "http://" + Prefs.hostName + "/";
 		if (master) {
 			remoteName += "master/";

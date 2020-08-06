@@ -1,6 +1,7 @@
 package com.bg.bearplane.gui;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -39,8 +40,7 @@ public abstract class Scene {
 	public static OrthographicCamera curCam;
 	private static ShapeRenderer shapeRenderer;
 	public static SpriteBatch batcher;
-	public static float xO = 0;
-	public static float yO = 0;
+
 	public static InputHandler input;
 
 	public static long lastRepeat = 0;
@@ -50,7 +50,7 @@ public abstract class Scene {
 	public boolean alting = false;
 	public boolean ctrling = false;
 
-	public boolean autoCenter = true;
+	public boolean autoCenter = false;
 
 	// iface stuff
 	public List<Frame> frames = new LinkedList<Frame>();
@@ -290,6 +290,33 @@ public abstract class Scene {
 			}
 		}
 	}
+	
+
+	public void addButtons(List<Button> buttons, int x, int y, int width, int height, int padding, String[] text, int[] ids, boolean up,
+			boolean toggle) {
+		int n = text.length;
+		int bX = x;
+		int bY = y - (padding / 2) - (height / 2) - (((n - 1) / 2) * (padding + height));
+		// if (!up) {
+		// bY = x;
+		// bX = y - (padding / 2) - (height / 2) - (((n - 1) / 2) * (padding + height));
+		// }
+		if (n % 2 != 0) {
+			if (up) {
+				//bY += (padding + height) / 2;
+			} else {
+				bX += (width + padding);
+			}
+		}
+		for (int c = 0; c < n; c++) {
+			buttons.add(new Button(this, ids[c], bX, bY, width, height, text[c], toggle));
+			if (up) {
+				//bY += (height + padding);
+			} else {
+				bX += (width + padding);
+			}
+		}
+	}
 
 	void nextFocus() {
 		if (textBoxes.size() > 0) {
@@ -341,7 +368,7 @@ public abstract class Scene {
 
 	public void draw(Texture t, int x, int y, int w, int h, int srcX, int srcY, int srcW, int srcH) {
 		try {
-			batcher.draw(t, x + xO, y + yO, w, h, srcX, srcY, srcW, srcH, false, true);
+			batcher.draw(t, x , y , w, h, srcX, srcY, srcW, srcH, false, true);
 		} catch (Exception e) {
 			Log.error(e);
 			System.exit(0);
@@ -350,8 +377,8 @@ public abstract class Scene {
 
 	public void drawAbs(Texture t, int x, int y, int w, int h, int srcX, int srcY, int srcW, int srcH) {
 		try {
-			batcher.draw(t, x + xO + curCam.position.x - BearGame.game.getGameWidth() / 2,
-					y + yO + curCam.position.y - BearGame.game.getGameHeight() / 2, w, h, srcX, srcY, srcW, srcH, false,
+			batcher.draw(t, x + curCam.position.x - BearGame.game.getGameWidth() / 2,
+					y + curCam.position.y - BearGame.game.getGameHeight() / 2, w, h, srcX, srcY, srcW, srcH, false,
 					true);
 		} catch (Exception e) {
 			Log.error(e);
@@ -398,8 +425,8 @@ public abstract class Scene {
 				eY -= (height / 2);
 			}
 			// we gotta round the floats
-			int dX = Math.round(eX + xO);
-			int dY = Math.round(eY + yO);
+			int dX = Math.round(eX );
+			int dY = Math.round(eY );
 			if (centered) {
 				batcher.draw(region, dX, dY, width / 2, height / 2, width, height, scale, scale, rotation);
 			} else {
@@ -463,8 +490,8 @@ public abstract class Scene {
 				int ascii = (int) c;
 				if (BearGame.assets.fontWidth[ascii] > 0) {
 					drawRegion(BearGame.assets.font[type][ascii],
-							Math.round(curX + padding + oX + xO + curCam.position.x - BearGame.game.getGameWidth() / 2),
-							Math.round(Y + oY + xO + curCam.position.y - BearGame.game.getGameHeight() / 2), false, 0,
+							Math.round(curX + padding + oX + curCam.position.x - BearGame.game.getGameWidth() / 2),
+							Math.round(Y + oY + curCam.position.y - BearGame.game.getGameHeight() / 2), false, 0,
 							scale);
 					curX += BearGame.assets.fontWidth[ascii] * scale + padding * 2 + spacing;
 				}
@@ -619,6 +646,7 @@ public abstract class Scene {
 
 	public static void setupScreen(float gameWidth, float gameHeight) {
 		try {
+			Log.debug("Set screen");
 			screenWidth = Gdx.graphics.getWidth();
 			screenHeight = Gdx.graphics.getHeight();
 			float screenR = (float) screenWidth / (float) screenHeight;
@@ -655,12 +683,15 @@ public abstract class Scene {
 			System.exit(0);
 		}
 	}
+	
+	public static Scene lastScene = null;
 
 	public static void change(String to) {
 		try {
 			input.wasMouseJustClicked[0] = false;
 			Scene s = scenes.get(to);
 			if (s != null) {
+				lastScene = scene;
 				scene = s;
 				if (!scene.started) {
 					scene.start();

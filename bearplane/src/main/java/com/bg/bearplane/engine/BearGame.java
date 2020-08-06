@@ -104,8 +104,17 @@ public class BearGame extends com.badlogic.gdx.Game {
 			cfg.width = gameWidth;
 			cfg.height = gameHeight;
 			cfg.resizable = resizable;
+			//cfg.width = 1366;
+			//cfg.height = 768;
 			Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 			cfg.y = screenSize.height / 2 - cfg.height / 2 - 32;
+			cfg.x = 0;
+			cfg.y = 0;
+	        cfg.resizable = false;
+	        System.setProperty("org.lwjgl.opengl.Window.undecorated", "true");
+	       // cfg.vSyncEnabled = false;
+	        //cfg.foregroundFPS = 60;
+	        //cfg.backgroundFPS = 60;
 			if (fullscreen) {
 				double width = screenSize.getWidth();
 				double height = screenSize.getHeight();
@@ -113,6 +122,7 @@ public class BearGame extends com.badlogic.gdx.Game {
 				cfg.width = (int) Math.round(width);
 				cfg.height = (int) Math.round(height);
 				cfg.resizable = false;
+
 			}
 		} catch (Exception e) {
 			Log.error(e);

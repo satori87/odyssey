@@ -34,6 +34,9 @@ public class PlayScene extends LiveMapScene {
 			case Keys.F6:
 				Odyssey.game.adminCommand(2);
 				break;
+			case Keys.ESCAPE:
+				System.exit(0);
+				break;
 			}
 		}
 		if (!character.dead && tick > character.moveTimer) {

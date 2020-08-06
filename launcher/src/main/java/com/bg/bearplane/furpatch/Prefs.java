@@ -8,9 +8,9 @@ public class Prefs
 {
     public static final int WINDOWWIDTH = 640;
     public static final int WINDOWHEIGHT = 480;
-    public static final String WINDOWNAME = "Odyssey: Dreams of Yore Patcher";
+    public static final String WINDOWNAME = "Odyssey Beta Patcher";
     public static String hostName;
-    public static final int HTTPTIMEOUT = 200;
+    public static final int HTTPTIMEOUT = 1000;
     
     static {
         Prefs.hostName = "patch.bearable.games";

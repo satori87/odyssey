@@ -467,6 +467,7 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 	@Override
 	public void loaded() {
 
+		//Scene.change("editItem");
 		Scene.change("menu");
 		Realm.checkAll();
 		realm.load();
@@ -601,13 +602,14 @@ public class Odyssey extends TCPClient implements Bearable, BearNet {
 			} else if (object instanceof MonsterData) {
 				MonsterData md = (MonsterData) object;
 				Realm.monsterData[md.id] = md;
-				for( Monster m : Realm.monsters.values()) {
+				for (Monster m : Realm.monsters.values()) {
 					m.load();
-					
+
 				}
 			} else if (object instanceof ItemData) {
 				ItemData id = (ItemData) object;
 				Realm.itemData[id.id] = id;
+				Log.debug("n:" + id.name);
 			} else if (object instanceof JoinGame) {
 				JoinGame jg = (JoinGame) object;
 				joinGame = true;

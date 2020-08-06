@@ -45,6 +45,8 @@ public class Map {
 	long lastHadPlayerAt = 0;
 
 	public Player editor = null;
+	
+	public Container items = new Container(100,1,true,100);
 
 	public Map(Game game, int id) {
 		this.game = game;

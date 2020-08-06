@@ -48,8 +48,8 @@ public class Registrar implements NetworkRegistrar {
 		kryo.register(AttackData.class);
 		kryo.register(ItemData.class);
 		kryo.register(ItemData[].class);
-		
 		kryo.register(ItemReceived.class);
+		kryo.register(boolean[].class);
 		
 	}
 

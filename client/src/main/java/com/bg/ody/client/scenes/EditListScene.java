@@ -21,13 +21,13 @@ public class EditListScene extends Scene {
 		case 1:
 			break;
 		case 2:
-			for (int i = 0; i < Shared.NUM_MONSTERS; i++) {
-				list.list.add((i + 1) + ": " + Realm.monsterData[i].name);
+			for (int i = 1; i < Shared.NUM_MONSTERS; i++) {
+				list.list.add((i) + ": " + Realm.monsterData[i].name);
 			}
 			break;
 		case 3:
-			for (int i = 0; i < Shared.NUM_ITEMS; i++) {
-				list.list.add((i + 1) + ": " + Realm.itemData[i].name);
+			for (int i = 1; i < Shared.NUM_ITEMS; i++) {
+				list.list.add((i) + ": " + Realm.itemData[i].name);
 			}
 			break;
 		}
@@ -51,7 +51,7 @@ public class EditListScene extends Scene {
 			break;
 		}
 		if (list.sel >= 0 && list.sel < msel) {
-			Odyssey.game.editNum = list.sel;
+			Odyssey.game.editNum = list.sel + 1;
 			Odyssey.game.listScroll = list.scroll;
 
 			switch (Odyssey.game.editType) {
@@ -59,11 +59,11 @@ public class EditListScene extends Scene {
 				break;
 			case 2:
 				change("editMonster");
-				Odyssey.editMonsterScene.load(Realm.monsterData[list.sel]);
+				Odyssey.editMonsterScene.load(Realm.monsterData[list.sel + 1]);
 				break;
 			case 3:
 				change("editItem");
-				Odyssey.editItemScene.load(Realm.itemData[list.sel]);
+				Odyssey.editItemScene.load(Realm.itemData[list.sel + 1]);
 				break;
 			}
 
@@ -73,7 +73,12 @@ public class EditListScene extends Scene {
 	@Override
 	public void switchTo() {
 		super.switchTo();
-		list.sel = Odyssey.game.editNum;
+		moveCameraTo(Shared.GAME_WIDTH / 2, Shared.GAME_HEIGHT / 2);
+		if (Odyssey.game.editNum > 0) {
+			list.sel = Odyssey.game.editNum - 1;
+		} else {
+			list.sel = 0;
+		}
 		list.scroll = Odyssey.game.listScroll;
 	}
 
